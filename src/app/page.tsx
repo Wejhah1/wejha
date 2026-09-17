@@ -13,7 +13,7 @@ export default async function Home() {
 
   return (
     <div>
-      <HomeHero images={locations.map((l) => l.cover_image_url)} />
+      <HomeHero locations={locations} />
       <CategoryRail categories={categories} />
       <FeaturedGrid locations={locations} />
     </div>
