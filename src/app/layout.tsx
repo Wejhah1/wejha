@@ -3,8 +3,7 @@ import { Cairo } from "next/font/google";
 import "./globals.css";
 import { LocaleProvider } from "@/lib/i18n/locale-context";
 import { SmoothScrollProvider } from "@/components/smooth-scroll-provider";
-import { Navbar } from "@/components/site/navbar";
-import { Footer } from "@/components/site/footer";
+import { AppShell } from "@/components/site/app-shell";
 
 const cairo = Cairo({
   subsets: ["arabic", "latin"],
@@ -27,11 +26,7 @@ export default function RootLayout({
       <body className={`${cairo.variable} font-sans antialiased`}>
         <LocaleProvider>
           <SmoothScrollProvider>
-            <div className="flex min-h-screen flex-col">
-              <Navbar />
-              <main className="flex-1">{children}</main>
-              <Footer />
-            </div>
+            <AppShell>{children}</AppShell>
           </SmoothScrollProvider>
         </LocaleProvider>
       </body>

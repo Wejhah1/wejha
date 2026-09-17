@@ -1,16 +1,40 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
+import { motion } from "framer-motion";
 import { Camera } from "lucide-react";
 import { useLocale } from "@/lib/i18n/locale-context";
 import { LocaleToggle } from "@/components/site/locale-toggle";
 import { Button } from "@/components/ui/button";
 
-export function Navbar() {
+export function Navbar({ transparentUntilScroll = false }: { transparentUntilScroll?: boolean }) {
   const { t } = useLocale();
+  const [revealed, setRevealed] = useState(!transparentUntilScroll);
+
+  useEffect(() => {
+    if (!transparentUntilScroll) return;
+
+    function onScroll() {
+      setRevealed(window.scrollY > window.innerHeight * 0.6);
+    }
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, [transparentUntilScroll]);
 
   return (
-    <header className="sticky top-0 z-40 border-b border-border/60 bg-background/80 backdrop-blur-md">
+    <motion.header
+      initial={false}
+      animate={{ y: revealed ? 0 : -16, opacity: revealed ? 1 : 0 }}
+      transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+      className={
+        transparentUntilScroll
+          ? "fixed inset-x-0 top-0 z-40 border-b border-border/60 bg-background/80 backdrop-blur-md"
+          : "sticky top-0 z-40 border-b border-border/60 bg-background/80 backdrop-blur-md"
+      }
+      style={!revealed ? { pointerEvents: "none" } : undefined}
+    >
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
         <Link href="/" className="flex items-center gap-2">
           <span className="flex h-9 w-9 items-center justify-center rounded-full bg-foreground text-background">
@@ -39,6 +63,6 @@ export function Navbar() {
           />
         </div>
       </div>
-    </header>
+    </motion.header>
   );
 }

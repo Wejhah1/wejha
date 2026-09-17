@@ -13,7 +13,7 @@ export default async function Home() {
 
   return (
     <div>
-      <HomeHero locations={locations} />
+      <HomeHero fallbackImage={locations[0]?.cover_image_url} />
       <CategoryRail categories={categories} />
       <FeaturedGrid locations={locations} />
     </div>
