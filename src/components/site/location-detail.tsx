@@ -1,11 +1,13 @@
 "use client";
 
 import Link from "next/link";
+import { motion } from "framer-motion";
 import { ArrowLeft, ArrowRight, MapPin, Users, Building2 } from "lucide-react";
 import { useLocale } from "@/lib/i18n/locale-context";
 import { GalleryLightbox } from "@/components/site/gallery-lightbox";
 import { WhatsAppContactCard } from "@/components/site/whatsapp-contact-card";
 import { FactChips } from "@/components/site/fact-chips";
+import { Reveal } from "@/components/motion/reveal";
 import type { Location } from "@/lib/types";
 
 export function LocationDetail({ location }: { location: Location }) {
@@ -35,14 +37,19 @@ export function LocationDetail({ location }: { location: Location }) {
         {t.location.backToBrowse}
       </Link>
 
-      <div className="relative mb-6 aspect-[16/9] w-full overflow-hidden rounded-2xl bg-muted">
+      <motion.div
+        initial={{ opacity: 0, scale: 1.03 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+        className="relative mb-6 aspect-[16/9] w-full overflow-hidden rounded-2xl bg-muted"
+      >
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={location.cover_image_url} alt={name} className="h-full w-full object-cover" />
-      </div>
+      </motion.div>
 
       <div className="grid grid-cols-1 gap-10 lg:grid-cols-[1fr_340px]">
         <div className="flex flex-col gap-8">
-          <div>
+          <Reveal>
             {categoryName && (
               <span className="text-sm font-semibold text-brand-foreground/70">
                 {categoryName}
@@ -68,16 +75,18 @@ export function LocationDetail({ location }: { location: Location }) {
                 {settingLabel}
               </span>
             </div>
-          </div>
+          </Reveal>
 
           {facts.length > 0 && (
-            <div>
+            <Reveal delay={0.1}>
               <h2 className="mb-3 text-xl font-bold">{t.location.about}</h2>
               <FactChips facts={facts} />
-            </div>
+            </Reveal>
           )}
 
-          <GalleryLightbox images={allImages} alt={name} />
+          <Reveal delay={0.15}>
+            <GalleryLightbox images={allImages} alt={name} />
+          </Reveal>
         </div>
 
         <div>

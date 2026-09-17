@@ -5,6 +5,7 @@ import { useState } from "react";
 import { SlidersHorizontal } from "lucide-react";
 import { useLocale } from "@/lib/i18n/locale-context";
 import { LocationCard } from "@/components/site/location-card";
+import { RevealGroup, RevealItem } from "@/components/motion/reveal";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -224,11 +225,13 @@ export function BrowseClient({
               {t.browse.noResults}
             </div>
           ) : (
-            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3">
+            <RevealGroup className="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3">
               {locations.map((location) => (
-                <LocationCard key={location.id} location={location} />
+                <RevealItem key={location.id}>
+                  <LocationCard location={location} />
+                </RevealItem>
               ))}
-            </div>
+            </RevealGroup>
           )}
         </div>
       </div>
