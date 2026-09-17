@@ -24,7 +24,7 @@ export function WhatsAppContactCard({ location }: { location: Location }) {
   });
 
   return (
-    <div className="sticky top-24 flex flex-col gap-4 rounded-2xl border border-border/60 p-6 shadow-sm">
+    <div className="sticky top-24 flex flex-col gap-4 rounded-2xl border border-border/60 bg-card p-6 shadow-xl">
       <div className="flex items-baseline gap-1">
         <span className="text-2xl font-extrabold">
           {location.price_per_day.toLocaleString(locale === "ar" ? "ar-SA" : "en-US")}
