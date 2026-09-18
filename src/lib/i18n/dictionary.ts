@@ -35,6 +35,8 @@ export const dictionary = {
       noResults: "لا توجد مواقع مطابقة لبحثك",
       resultsCount: "موقع",
       perDay: "يوم",
+      viewList: "عرض قائمة",
+      viewGrid: "عرض شبكي",
     },
     location: {
       capacity: "السعة",
@@ -104,6 +106,8 @@ export const dictionary = {
       noResults: "No locations match your search",
       resultsCount: "locations",
       perDay: "day",
+      viewList: "List view",
+      viewGrid: "Grid view",
     },
     location: {
       capacity: "Capacity",

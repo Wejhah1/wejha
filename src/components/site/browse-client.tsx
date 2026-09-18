@@ -2,7 +2,7 @@
 
 import { useRouter, usePathname } from "next/navigation";
 import { useState } from "react";
-import { SlidersHorizontal } from "lucide-react";
+import { LayoutGrid, LayoutList, SlidersHorizontal } from "lucide-react";
 import { useLocale } from "@/lib/i18n/locale-context";
 import { LocationCard } from "@/components/site/location-card";
 import { RevealGroup, RevealItem } from "@/components/motion/reveal";
@@ -44,6 +44,7 @@ export function BrowseClient({
   const pathname = usePathname();
   const [draft, setDraft] = useState<ActiveFilters>(activeFilters);
   const [open, setOpen] = useState(false);
+  const [view, setView] = useState<"list" | "grid">("list");
 
   const apply = (next: ActiveFilters) => {
     const query = new URLSearchParams();
@@ -196,22 +197,48 @@ export function BrowseClient({
           </p>
         </div>
 
-        <Sheet open={open} onOpenChange={setOpen}>
-          <SheetTrigger
-            render={
-              <Button variant="outline" className="gap-2 lg:hidden">
-                <SlidersHorizontal className="h-4 w-4" />
-                {t.browse.filters}
-              </Button>
-            }
-          />
-          <SheetContent side={locale === "ar" ? "left" : "right"} className="overflow-y-auto p-6">
-            <SheetHeader className="p-0">
-              <SheetTitle>{t.browse.filters}</SheetTitle>
-            </SheetHeader>
-            <div className="mt-6">{filterBody}</div>
-          </SheetContent>
-        </Sheet>
+        <div className="flex items-center gap-2">
+          <div className="flex items-center gap-0.5 rounded-full border border-border/60 p-1 sm:hidden">
+            <button
+              type="button"
+              onClick={() => setView("list")}
+              aria-label={t.browse.viewList}
+              aria-pressed={view === "list"}
+              className={`rounded-full p-1.5 transition-colors ${
+                view === "list" ? "bg-foreground text-background" : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              <LayoutList className="h-4 w-4" />
+            </button>
+            <button
+              type="button"
+              onClick={() => setView("grid")}
+              aria-label={t.browse.viewGrid}
+              aria-pressed={view === "grid"}
+              className={`rounded-full p-1.5 transition-colors ${
+                view === "grid" ? "bg-foreground text-background" : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              <LayoutGrid className="h-4 w-4" />
+            </button>
+          </div>
+
+          <Sheet open={open} onOpenChange={setOpen}>
+            <SheetTrigger
+              render={
+                <Button variant="outline" size="icon" className="lg:hidden" aria-label={t.browse.filters}>
+                  <SlidersHorizontal className="h-4 w-4" />
+                </Button>
+              }
+            />
+            <SheetContent side={locale === "ar" ? "left" : "right"} className="overflow-y-auto p-6">
+              <SheetHeader className="p-0">
+                <SheetTitle>{t.browse.filters}</SheetTitle>
+              </SheetHeader>
+              <div className="mt-6">{filterBody}</div>
+            </SheetContent>
+          </Sheet>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-[260px_1fr]">
@@ -225,10 +252,14 @@ export function BrowseClient({
               {t.browse.noResults}
             </div>
           ) : (
-            <RevealGroup className="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3">
+            <RevealGroup
+              className={`grid gap-3 sm:grid-cols-2 sm:gap-6 xl:grid-cols-3 ${
+                view === "grid" ? "grid-cols-2" : "grid-cols-1"
+              }`}
+            >
               {locations.map((location) => (
                 <RevealItem key={location.id}>
-                  <LocationCard location={location} />
+                  <LocationCard location={location} view={view} />
                 </RevealItem>
               ))}
             </RevealGroup>

@@ -19,7 +19,7 @@ export function FeaturedGrid({ locations }: { locations: Location[] }) {
           {t.home.viewAll}
         </Link>
       </Reveal>
-      <RevealGroup className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+      <RevealGroup className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3">
         {locations.map((location) => (
           <RevealItem key={location.id}>
             <LocationCard location={location} />
