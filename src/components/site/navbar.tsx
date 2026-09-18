@@ -26,28 +26,36 @@ export function Navbar({ transparentUntilScroll = false }: { transparentUntilScr
   return (
     <motion.header
       initial={false}
-      animate={{ y: revealed ? 0 : -16, opacity: revealed ? 1 : 0 }}
-      transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+      animate={{ y: revealed ? 0 : -24, opacity: revealed ? 1 : 0 }}
+      transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
       className={
         transparentUntilScroll
-          ? "fixed inset-x-0 top-0 z-40 border-b border-border/60 bg-background/80 backdrop-blur-md"
-          : "sticky top-0 z-40 border-b border-border/60 bg-background/80 backdrop-blur-md"
+          ? "fixed inset-x-0 top-4 z-40 flex justify-center px-4"
+          : "sticky top-4 z-40 mb-4 flex justify-center px-4"
       }
       style={!revealed ? { pointerEvents: "none" } : undefined}
     >
-      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
+      <div className="flex h-14 w-full max-w-3xl items-center justify-between gap-2 rounded-full border border-border/60 bg-background/90 px-3 shadow-lg shadow-black/5 backdrop-blur-md sm:px-4">
         <Link href="/" className="flex items-center gap-2">
-          <span className="flex h-9 w-9 items-center justify-center rounded-full bg-foreground text-background">
-            <Camera className="h-4.5 w-4.5" strokeWidth={2} />
+          <span className="flex h-8 w-8 items-center justify-center rounded-full bg-foreground text-background">
+            <Camera className="h-4 w-4" strokeWidth={2} />
           </span>
-          <span className="text-xl font-extrabold tracking-tight">{t.brand}</span>
+          <span className="font-heading text-lg font-semibold tracking-tight">{t.brand}</span>
         </Link>
 
         <nav className="hidden items-center gap-1 sm:flex">
-          <Button variant="ghost" nativeButton={false} render={<Link href="/">{t.nav.home}</Link>} />
           <Button
             variant="ghost"
+            size="sm"
             nativeButton={false}
+            className="rounded-full"
+            render={<Link href="/">{t.nav.home}</Link>}
+          />
+          <Button
+            variant="ghost"
+            size="sm"
+            nativeButton={false}
+            className="rounded-full"
             render={<Link href="/locations">{t.nav.browse}</Link>}
           />
         </nav>
@@ -58,7 +66,7 @@ export function Navbar({ transparentUntilScroll = false }: { transparentUntilScr
             variant="outline"
             size="sm"
             nativeButton={false}
-            className="hidden sm:inline-flex"
+            className="hidden rounded-full sm:inline-flex"
             render={<Link href="/admin">{t.nav.admin}</Link>}
           />
         </div>
