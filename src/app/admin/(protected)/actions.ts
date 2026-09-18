@@ -2,8 +2,8 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { headers } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import type { LocationSetting } from "@/lib/types";
 
 function slugify(input: string) {
@@ -103,31 +103,28 @@ export async function togglePublish(id: string, isPublished: boolean) {
   revalidatePath("/locations");
 }
 
-export async function inviteAdmin(formData: FormData) {
+export async function createAdmin(formData: FormData) {
   const supabase = await createClient();
   const email = String(formData.get("email") ?? "").trim().toLowerCase();
+  const password = String(formData.get("password") ?? "");
   const role = String(formData.get("role") ?? "admin") as "admin" | "super_admin";
-  if (!email) throw new Error("Email is required");
+  if (!email || !password) throw new Error("Email and password are required");
 
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
-  // Record the invite first: a trigger on auth.users promotes this email to
-  // an admin row automatically the moment they complete their first magic-link
-  // login, since we don't have their auth user id until then.
-  const { error: inviteError } = await supabase
-    .from("pending_admin_invites")
-    .upsert({ email, role, invited_by: user?.id ?? null }, { onConflict: "email" });
-  if (inviteError) throw new Error(inviteError.message);
-
-  const headerList = await headers();
-  const origin = headerList.get("origin") ?? `https://${headerList.get("host")}`;
-
-  const { error } = await supabase.auth.signInWithOtp({
+  const adminClient = createAdminClient();
+  const { data: created, error: createError } = await adminClient.auth.admin.createUser({
     email,
-    options: { emailRedirectTo: `${origin}/auth/callback` },
+    password,
+    email_confirm: true,
   });
+  if (createError) throw new Error(createError.message);
+
+  const { error } = await supabase
+    .from("admins")
+    .insert({ id: created.user.id, email, role, invited_by: user?.id ?? null });
   if (error) throw new Error(error.message);
 
   revalidatePath("/admin/admins");

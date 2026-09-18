@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { LayoutGrid, MapPinned, Users, LogOut } from "lucide-react";
+import { LayoutGrid, MapPinned, Users, UserCog, LogOut } from "lucide-react";
 import { useLocale } from "@/lib/i18n/locale-context";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -19,6 +19,7 @@ export function AdminShell({ admin, children }: { admin: Admin; children: React.
     ...(admin.role === "super_admin"
       ? [{ href: "/admin/admins", label: t.admin.admins, icon: Users, exact: false }]
       : []),
+    { href: "/admin/account", label: t.admin.account, icon: UserCog, exact: false },
   ];
 
   const logout = async () => {

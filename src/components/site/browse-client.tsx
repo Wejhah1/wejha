@@ -187,11 +187,11 @@ export function BrowseClient({
   );
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
-      <div className="mb-8 flex items-center justify-between">
+    <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 sm:py-14 lg:px-8">
+      <div className="mb-10 flex items-end justify-between border-b border-border/60 pb-6 sm:mb-14">
         <div>
-          <h1 className="text-3xl font-extrabold tracking-tight">{t.browse.title}</h1>
-          <p className="mt-1 text-sm text-muted-foreground">
+          <h1 className="text-3xl font-extrabold tracking-tight sm:text-4xl">{t.browse.title}</h1>
+          <p className="mt-2 text-sm text-muted-foreground">
             {locations.length} {t.browse.resultsCount}
           </p>
         </div>
@@ -205,7 +205,7 @@ export function BrowseClient({
               </Button>
             }
           />
-          <SheetContent side={locale === "ar" ? "left" : "right"} className="overflow-y-auto p-6">
+          <SheetContent side="bottom" className="max-h-[85vh] overflow-y-auto rounded-t-3xl p-6">
             <SheetHeader className="p-0">
               <SheetTitle>{t.browse.filters}</SheetTitle>
             </SheetHeader>
@@ -214,9 +214,9 @@ export function BrowseClient({
         </Sheet>
       </div>
 
-      <div className="grid grid-cols-1 gap-8 lg:grid-cols-[260px_1fr]">
+      <div className="grid grid-cols-1 gap-8 lg:grid-cols-[260px_1fr] lg:gap-12">
         <aside className="hidden lg:block">
-          <div className="sticky top-24 rounded-2xl border border-border/60 p-5">{filterBody}</div>
+          <div className="sticky top-24 rounded-2xl border border-border/60 p-6">{filterBody}</div>
         </aside>
 
         <div>
@@ -225,7 +225,7 @@ export function BrowseClient({
               {t.browse.noResults}
             </div>
           ) : (
-            <RevealGroup className="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3">
+            <RevealGroup className="grid grid-cols-2 gap-3 sm:gap-6 xl:grid-cols-3">
               {locations.map((location) => (
                 <RevealItem key={location.id}>
                   <LocationCard location={location} />

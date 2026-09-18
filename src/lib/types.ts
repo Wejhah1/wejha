@@ -50,10 +50,3 @@ export interface Admin {
   created_at: string;
 }
 
-export interface PendingAdminInvite {
-  email: string;
-  role: AdminRole;
-  invited_by: string | null;
-  created_at: string;
-}
-

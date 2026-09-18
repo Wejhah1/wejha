@@ -15,12 +15,22 @@ export function Navbar({ transparentUntilScroll = false }: { transparentUntilScr
   useEffect(() => {
     if (!transparentUntilScroll) return;
 
-    function onScroll() {
-      setRevealed(window.scrollY > window.innerHeight * 0.6);
+    // Reveal once the current page's hero has scrolled past, whatever its
+    // height happens to be — a fixed viewport-height fraction doesn't work
+    // across heroes of very different heights (full-screen home hero vs. the
+    // shorter location-detail hero).
+    const sentinel = document.getElementById("hero-reveal-sentinel");
+    if (!sentinel) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- fallback so the navbar isn't stuck hidden if a route passes transparentUntilScroll without rendering a hero sentinel
+      setRevealed(true);
+      return;
     }
-    onScroll();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
+
+    const observer = new IntersectionObserver(([entry]) => {
+      setRevealed(!entry.isIntersecting);
+    });
+    observer.observe(sentinel);
+    return () => observer.disconnect();
   }, [transparentUntilScroll]);
 
   return (
@@ -54,13 +64,6 @@ export function Navbar({ transparentUntilScroll = false }: { transparentUntilScr
 
         <div className="flex items-center gap-2">
           <LocaleToggle />
-          <Button
-            variant="outline"
-            size="sm"
-            nativeButton={false}
-            className="hidden sm:inline-flex"
-            render={<Link href="/admin">{t.nav.admin}</Link>}
-          />
         </div>
       </div>
     </motion.header>

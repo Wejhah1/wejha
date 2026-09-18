@@ -1,7 +1,7 @@
 "use client";
 
 import { useTransition } from "react";
-import { Trash2, Clock } from "lucide-react";
+import { Trash2 } from "lucide-react";
 import { useLocale } from "@/lib/i18n/locale-context";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,16 +14,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { inviteAdmin, removeAdmin } from "@/app/admin/(protected)/actions";
-import type { Admin, PendingAdminInvite } from "@/lib/types";
+import { createAdmin, removeAdmin } from "@/app/admin/(protected)/actions";
+import type { Admin } from "@/lib/types";
 
 export function AdminsManager({
   admins,
-  invites,
   currentAdminId,
 }: {
   admins: Admin[];
-  invites: PendingAdminInvite[];
   currentAdminId: string;
 }) {
   const { t } = useLocale();
@@ -36,10 +34,25 @@ export function AdminsManager({
         <p className="mt-1 text-sm text-muted-foreground">{t.admin.superAdminOnly}</p>
       </div>
 
-      <form action={inviteAdmin} className="flex flex-col gap-3 rounded-2xl border border-border/60 p-5">
-        <Label htmlFor="email">{t.admin.inviteAdmin}</Label>
-        <div className="flex gap-2">
-          <Input id="email" name="email" type="email" required dir="ltr" placeholder="admin@example.com" />
+      <form action={createAdmin} className="flex flex-col gap-3 rounded-2xl border border-border/60 p-5">
+        <Label htmlFor="new-admin-email">{t.admin.inviteAdmin}</Label>
+        <div className="grid grid-cols-1 gap-2 sm:grid-cols-[1fr_1fr_auto_auto]">
+          <Input
+            id="new-admin-email"
+            name="email"
+            type="email"
+            required
+            dir="ltr"
+            placeholder="admin@example.com"
+          />
+          <Input
+            name="password"
+            type="password"
+            required
+            minLength={6}
+            dir="ltr"
+            placeholder={t.admin.passwordPlaceholder}
+          />
           <Select name="role" defaultValue="admin">
             <SelectTrigger className="w-40">
               <SelectValue>
@@ -83,23 +96,6 @@ export function AdminsManager({
           ))}
         </div>
       </div>
-
-      {invites.length > 0 && (
-        <div>
-          <h2 className="mb-3 text-lg font-bold">Pending invites</h2>
-          <div className="flex flex-col gap-2">
-            {invites.map((invite) => (
-              <div
-                key={invite.email}
-                className="flex items-center gap-2 rounded-xl border border-dashed border-border px-4 py-3 text-sm text-muted-foreground"
-              >
-                <Clock className="h-4 w-4" />
-                {invite.email} — waiting for first login ({invite.role})
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
     </div>
   );
 }

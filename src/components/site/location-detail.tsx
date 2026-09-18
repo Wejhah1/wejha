@@ -19,9 +19,9 @@ export function LocationDetail({ location }: { location: Location }) {
     <div>
       <LocationHero location={location} />
 
-      <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 gap-10 lg:grid-cols-[1fr_340px]">
-          <div className="flex flex-col gap-8">
+          <div className="flex min-w-0 flex-col gap-8">
             {facts.length > 0 && (
               <Reveal>
                 <h2 className="mb-3 text-xl font-bold">{t.location.about}</h2>
@@ -34,7 +34,7 @@ export function LocationDetail({ location }: { location: Location }) {
             </Reveal>
           </div>
 
-          <div className="lg:-mt-40">
+          <div>
             <WhatsAppContactCard location={location} />
           </div>
         </div>

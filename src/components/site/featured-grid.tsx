@@ -12,14 +12,14 @@ export function FeaturedGrid({ locations }: { locations: Location[] }) {
   if (locations.length === 0) return null;
 
   return (
-    <section className="mx-auto max-w-7xl px-4 py-4 sm:px-6 lg:px-8">
-      <Reveal className="mb-6 flex items-center justify-between">
-        <h2 className="text-2xl font-bold">{t.home.featuredTitle}</h2>
+    <section className="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8 lg:py-20">
+      <Reveal className="mb-8 flex items-end justify-between sm:mb-10">
+        <h2 className="text-2xl font-bold tracking-tight sm:text-3xl">{t.home.featuredTitle}</h2>
         <Link href="/locations" className="text-sm font-medium text-muted-foreground hover:text-foreground">
           {t.home.viewAll}
         </Link>
       </Reveal>
-      <RevealGroup className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+      <RevealGroup className="grid grid-cols-2 gap-3 sm:gap-6 lg:grid-cols-3">
         {locations.map((location) => (
           <RevealItem key={location.id}>
             <LocationCard location={location} />
