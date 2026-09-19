@@ -25,7 +25,7 @@ export function CategoryRail({ categories }: { categories: Category[] }) {
       <Reveal>
         <h2 className="mb-6 text-2xl font-bold">{t.home.categoriesTitle}</h2>
       </Reveal>
-      <RevealGroup className="flex gap-3 overflow-x-auto pb-2">
+      <RevealGroup className="flex gap-3 overflow-x-auto pb-2 md:flex-wrap md:justify-center md:overflow-visible md:pb-0">
         {categories.map((category) => {
           const Icon = (category.icon && ICONS[category.icon]) || Sparkles;
           const name = locale === "ar" ? category.name_ar : category.name_en;

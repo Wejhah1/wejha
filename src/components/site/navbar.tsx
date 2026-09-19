@@ -62,13 +62,6 @@ export function Navbar({ transparentUntilScroll = false }: { transparentUntilScr
 
         <div className="flex items-center gap-2">
           <LocaleToggle />
-          <Button
-            variant="outline"
-            size="sm"
-            nativeButton={false}
-            className="hidden rounded-full sm:inline-flex"
-            render={<Link href="/admin">{t.nav.admin}</Link>}
-          />
         </div>
       </div>
     </motion.header>

@@ -123,6 +123,9 @@ export function HomeHero() {
   const panelRadius = useTransform(scrollYProgress, [0.35, 1], [0, 48]);
   const contentOpacity = useTransform(scrollYProgress, [0.3, 0.75], [1, 0]);
   const hintOpacity = useTransform(scrollYProgress, [0, 0.08], [1, 0]);
+  const blob1Y = useTransform(scrollYProgress, [0, 1], [0, -90]);
+  const blob2Y = useTransform(scrollYProgress, [0, 1], [0, 70]);
+  const blob3Y = useTransform(scrollYProgress, [0, 1], [0, -50]);
 
   return (
     <>
@@ -135,21 +138,27 @@ export function HomeHero() {
             className="absolute inset-0 overflow-hidden bg-[#1a1310]"
           >
             <div className="absolute inset-0">
-              <motion.div
-                animate={{ x: [0, 30, 0], y: [0, -20, 0] }}
-                transition={{ duration: 22, repeat: Infinity, ease: "easeInOut" }}
-                className="absolute -start-32 -top-32 h-[32rem] w-[32rem] rounded-full bg-[oklch(0.56_0.15_35)] opacity-25 blur-[110px]"
-              />
-              <motion.div
-                animate={{ x: [0, -24, 0], y: [0, 26, 0] }}
-                transition={{ duration: 26, repeat: Infinity, ease: "easeInOut" }}
-                className="absolute -end-24 top-1/3 h-[28rem] w-[28rem] rounded-full bg-[oklch(0.58_0.09_120)] opacity-20 blur-[110px]"
-              />
-              <motion.div
-                animate={{ x: [0, 18, 0], y: [0, -16, 0] }}
-                transition={{ duration: 20, repeat: Infinity, ease: "easeInOut" }}
-                className="absolute bottom-[-10rem] start-1/4 h-[26rem] w-[26rem] rounded-full bg-[oklch(0.7_0.1_75)] opacity-15 blur-[100px]"
-              />
+              <motion.div style={{ y: blob1Y }} className="absolute -start-32 -top-32 h-[32rem] w-[32rem]">
+                <motion.div
+                  animate={{ x: [0, 30, 0], y: [0, -20, 0] }}
+                  transition={{ duration: 22, repeat: Infinity, ease: "easeInOut" }}
+                  className="h-full w-full rounded-full bg-[oklch(0.56_0.15_35)] opacity-25 blur-[110px]"
+                />
+              </motion.div>
+              <motion.div style={{ y: blob2Y }} className="absolute -end-24 top-1/3 h-[28rem] w-[28rem]">
+                <motion.div
+                  animate={{ x: [0, -24, 0], y: [0, 26, 0] }}
+                  transition={{ duration: 26, repeat: Infinity, ease: "easeInOut" }}
+                  className="h-full w-full rounded-full bg-[oklch(0.58_0.09_120)] opacity-20 blur-[110px]"
+                />
+              </motion.div>
+              <motion.div style={{ y: blob3Y }} className="absolute bottom-[-10rem] start-1/4 h-[26rem] w-[26rem]">
+                <motion.div
+                  animate={{ x: [0, 18, 0], y: [0, -16, 0] }}
+                  transition={{ duration: 20, repeat: Infinity, ease: "easeInOut" }}
+                  className="h-full w-full rounded-full bg-[oklch(0.7_0.1_75)] opacity-15 blur-[100px]"
+                />
+              </motion.div>
             </div>
 
             <motion.div

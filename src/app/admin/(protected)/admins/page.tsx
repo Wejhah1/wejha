@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { AdminsManager } from "@/components/admin/admins-manager";
-import type { Admin, PendingAdminInvite } from "@/lib/types";
+import type { Admin } from "@/lib/types";
 
 export default async function AdminsPage() {
   const supabase = await createClient();
@@ -17,16 +17,7 @@ export default async function AdminsPage() {
 
   if (currentAdmin?.role !== "super_admin") redirect("/admin");
 
-  const [{ data: admins }, { data: invites }] = await Promise.all([
-    supabase.from("admins").select("*").order("created_at"),
-    supabase.from("pending_admin_invites").select("*").order("created_at"),
-  ]);
+  const { data: admins } = await supabase.from("admins").select("*").order("created_at");
 
-  return (
-    <AdminsManager
-      admins={(admins ?? []) as Admin[]}
-      invites={(invites ?? []) as PendingAdminInvite[]}
-      currentAdminId={currentAdmin.id}
-    />
-  );
+  return <AdminsManager admins={(admins ?? []) as Admin[]} currentAdminId={currentAdmin.id} />;
 }

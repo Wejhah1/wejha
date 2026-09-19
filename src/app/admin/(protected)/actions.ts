@@ -2,9 +2,8 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { headers } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
-import type { LocationSetting } from "@/lib/types";
+import type { AdminRole, LocationSetting } from "@/lib/types";
 
 function slugify(input: string) {
   return input
@@ -103,30 +102,18 @@ export async function togglePublish(id: string, isPublished: boolean) {
   revalidatePath("/locations");
 }
 
-export async function inviteAdmin(formData: FormData) {
+export async function createAdmin(formData: FormData) {
   const supabase = await createClient();
   const email = String(formData.get("email") ?? "").trim().toLowerCase();
-  const role = String(formData.get("role") ?? "admin") as "admin" | "super_admin";
+  const password = String(formData.get("password") ?? "");
+  const role = String(formData.get("role") ?? "admin") as AdminRole;
   if (!email) throw new Error("Email is required");
+  if (password.length < 8) throw new Error("Password must be at least 8 characters");
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  // Record the invite first: a trigger on auth.users promotes this email to
-  // an admin row automatically the moment they complete their first magic-link
-  // login, since we don't have their auth user id until then.
-  const { error: inviteError } = await supabase
-    .from("pending_admin_invites")
-    .upsert({ email, role, invited_by: user?.id ?? null }, { onConflict: "email" });
-  if (inviteError) throw new Error(inviteError.message);
-
-  const headerList = await headers();
-  const origin = headerList.get("origin") ?? `https://${headerList.get("host")}`;
-
-  const { error } = await supabase.auth.signInWithOtp({
-    email,
-    options: { emailRedirectTo: `${origin}/auth/callback` },
+  const { error } = await supabase.rpc("admin_create_admin", {
+    p_email: email,
+    p_password: password,
+    p_role: role,
   });
   if (error) throw new Error(error.message);
 
