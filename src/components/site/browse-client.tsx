@@ -2,7 +2,8 @@
 
 import { useRouter, usePathname } from "next/navigation";
 import { useState } from "react";
-import { LayoutGrid, LayoutList, SlidersHorizontal } from "lucide-react";
+import { ArrowLeft, ArrowRight, LayoutGrid, LayoutList, SlidersHorizontal } from "lucide-react";
+import Link from "next/link";
 import { useLocale } from "@/lib/i18n/locale-context";
 import { LocationCard } from "@/components/site/location-card";
 import { RevealGroup, RevealItem } from "@/components/motion/reveal";
@@ -191,6 +192,17 @@ export function BrowseClient({
     <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
       <div className="mb-8 flex items-center justify-between">
         <div>
+          <Link
+            href="/"
+            className="mb-2 inline-flex items-center gap-1.5 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+          >
+            {locale === "ar" ? (
+              <ArrowRight className="h-4 w-4" />
+            ) : (
+              <ArrowLeft className="h-4 w-4" />
+            )}
+            {t.browse.back}
+          </Link>
           <h1 className="text-3xl font-extrabold tracking-tight">{t.browse.title}</h1>
           <p className="mt-1 text-sm text-muted-foreground">
             {locations.length} {t.browse.resultsCount}

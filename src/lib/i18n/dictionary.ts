@@ -19,6 +19,7 @@ export const dictionary = {
     },
     browse: {
       title: "استكشف المواقع",
+      back: "العودة للرئيسية",
       filters: "الفلاتر",
       category: "النوع",
       city: "المدينة",
@@ -101,6 +102,7 @@ export const dictionary = {
     },
     browse: {
       title: "Browse Locations",
+      back: "Back to home",
       filters: "Filters",
       category: "Category",
       city: "City",
