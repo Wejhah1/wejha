@@ -12,6 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { CoverUploader, GalleryUploader } from "@/components/admin/image-uploader";
 import { useLocale } from "@/lib/i18n/locale-context";
 import type { Category, City, Location } from "@/lib/types";
 
@@ -131,30 +132,14 @@ export function LocationForm({
         </div>
       </div>
 
-      <div className="flex flex-col gap-2">
-        <Label htmlFor="cover_image_url">Cover image URL</Label>
-        <Input
-          id="cover_image_url"
-          name="cover_image_url"
-          type="url"
-          required
-          dir="ltr"
-          placeholder="https://..."
-          defaultValue={location?.cover_image_url}
-        />
-      </div>
+      <CoverUploader
+        initialUrl={location?.cover_image_url}
+        initialFocal={
+          location ? { x: location.cover_focal_x, y: location.cover_focal_y } : undefined
+        }
+      />
 
-      <div className="flex flex-col gap-2">
-        <Label htmlFor="gallery_urls">Gallery image URLs (one per line)</Label>
-        <Textarea
-          id="gallery_urls"
-          name="gallery_urls"
-          rows={4}
-          dir="ltr"
-          placeholder="https://...\nhttps://..."
-          defaultValue={location?.gallery_urls.join("\n")}
-        />
-      </div>
+      <GalleryUploader initialUrls={location?.gallery_urls} />
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div className="flex flex-col gap-2">

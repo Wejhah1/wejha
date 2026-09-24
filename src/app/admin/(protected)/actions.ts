@@ -14,6 +14,11 @@ function slugify(input: string) {
     .replace(/(^-|-$)/g, "");
 }
 
+function clampPercent(value: FormDataEntryValue | null) {
+  const n = Number(value);
+  return Number.isFinite(n) ? Math.min(100, Math.max(0, Math.round(n))) : 50;
+}
+
 function parseLocationForm(formData: FormData) {
   const facts_ar = String(formData.get("facts_ar") ?? "")
     .split("\n")
@@ -39,6 +44,8 @@ function parseLocationForm(formData: FormData) {
     facts_ar,
     facts_en,
     cover_image_url: String(formData.get("cover_image_url") ?? ""),
+    cover_focal_x: clampPercent(formData.get("cover_focal_x")),
+    cover_focal_y: clampPercent(formData.get("cover_focal_y")),
     gallery_urls,
     whatsapp_number: String(formData.get("whatsapp_number") ?? ""),
     whatsapp_contact_name: String(formData.get("whatsapp_contact_name") ?? "") || null,

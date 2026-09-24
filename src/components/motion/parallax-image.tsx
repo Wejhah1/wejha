@@ -3,7 +3,17 @@
 import { useRef } from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
 
-export function ParallaxImage({ src, alt, className }: { src: string; alt: string; className?: string }) {
+export function ParallaxImage({
+  src,
+  alt,
+  className,
+  position = "50% 50%",
+}: {
+  src: string;
+  alt: string;
+  className?: string;
+  position?: string;
+}) {
   const ref = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({
     target: ref,
@@ -18,7 +28,7 @@ export function ParallaxImage({ src, alt, className }: { src: string; alt: strin
       <motion.img
         src={src}
         alt={alt}
-        style={{ y, scale }}
+        style={{ y, scale, objectPosition: position }}
         className="h-full w-full object-cover will-change-transform"
       />
     </div>

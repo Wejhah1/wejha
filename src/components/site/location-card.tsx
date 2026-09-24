@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { MapPin, Users } from "lucide-react";
+import { SiteImage } from "@/components/site/site-image";
 import { TiltCard } from "@/components/motion/tilt-card";
 import { useLocale } from "@/lib/i18n/locale-context";
 import type { Location } from "@/lib/types";
@@ -36,12 +37,12 @@ export function LocationCard({
             isGrid ? "absolute inset-0 h-full w-full rounded-none" : "relative h-24 w-24 shrink-0 rounded-xl"
           } sm:absolute sm:inset-0 sm:h-full sm:w-full sm:rounded-none`}
         >
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
+          <SiteImage
             src={location.cover_image_url}
             alt={name}
-            loading="lazy"
-            className="h-full w-full object-cover transition-transform duration-700 ease-out sm:group-hover:scale-110"
+            sizes="(min-width: 1280px) 400px, (min-width: 640px) 45vw, 50vw"
+            position={`${location.cover_focal_x}% ${location.cover_focal_y}%`}
+            className="object-cover transition-transform duration-700 ease-out sm:group-hover:scale-110"
           />
         </div>
         <div

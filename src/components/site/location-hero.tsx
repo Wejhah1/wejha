@@ -47,7 +47,12 @@ export function LocationHero({ location }: { location: Location }) {
       className="relative -mt-px h-[62vh] min-h-[420px] w-full overflow-hidden bg-neutral-900"
       style={{ perspective: 1200 }}
     >
-      <ParallaxImage src={location.cover_image_url} alt={name} className="absolute inset-0 h-full w-full" />
+      <ParallaxImage
+        src={location.cover_image_url}
+        alt={name}
+        position={`${location.cover_focal_x}% ${location.cover_focal_y}%`}
+        className="absolute inset-0 h-full w-full"
+      />
       <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-black/10" />
       <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-transparent to-transparent" />
 

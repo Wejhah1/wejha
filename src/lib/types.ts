@@ -31,6 +31,8 @@ export interface Location {
   facts_ar: string[];
   facts_en: string[];
   cover_image_url: string;
+  cover_focal_x: number;
+  cover_focal_y: number;
   gallery_urls: string[];
   whatsapp_number: string;
   whatsapp_contact_name: string | null;
