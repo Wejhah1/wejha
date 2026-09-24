@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import type { AdminRole, LocationSetting } from "@/lib/types";
+import type { AdminRole, Category, LocationSetting } from "@/lib/types";
 
 function slugify(input: string) {
   return input
@@ -122,13 +122,17 @@ export async function createCategory(formData: FormData) {
   let slug = base;
   for (let i = 2; taken.has(slug); i++) slug = `${base}-${i}`;
 
-  const { error } = await supabase.from("categories").insert({ name_ar, name_en, slug, icon });
+  const { data, error } = await supabase
+    .from("categories")
+    .insert({ name_ar, name_en, slug, icon })
+    .select()
+    .single();
   if (error) throw new Error(error.message);
 
   revalidatePath("/admin/categories");
-  revalidatePath("/admin/locations/new");
   revalidatePath("/");
   revalidatePath("/locations");
+  return data as Category;
 }
 
 export async function deleteCategory(id: string) {

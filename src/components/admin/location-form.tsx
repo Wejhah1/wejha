@@ -12,7 +12,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useState } from "react";
 import { CoverUploader, GalleryUploader } from "@/components/admin/image-uploader";
+import { QuickAddCategory } from "@/components/admin/quick-add-category";
 import { useLocale } from "@/lib/i18n/locale-context";
 import type { Category, City, Location } from "@/lib/types";
 
@@ -28,6 +30,8 @@ export function LocationForm({
   location?: Location;
 }) {
   const { locale, t } = useLocale();
+  const [cats, setCats] = useState(categories);
+  const [categoryId, setCategoryId] = useState<string | undefined>(location?.category_id ?? undefined);
 
   return (
     <form action={action} className="flex max-w-3xl flex-col gap-6">
@@ -45,26 +49,33 @@ export function LocationForm({
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         <div className="flex flex-col gap-2">
           <Label>{t.browse.category}</Label>
-          <Select name="category_id" defaultValue={location?.category_id ?? undefined}>
+          <Select
+            name="category_id"
+            value={categoryId}
+            onValueChange={(v) => setCategoryId(v ?? undefined)}
+          >
             <SelectTrigger>
               <SelectValue placeholder="—">
-                {(v: string | null) =>
-                  (v && categories.find((c) => c.id === v)
-                    ? locale === "ar"
-                      ? categories.find((c) => c.id === v)!.name_ar
-                      : categories.find((c) => c.id === v)!.name_en
-                    : null) || "—"
-                }
+                {(v: string | null) => {
+                  const match = v ? cats.find((c) => c.id === v) : null;
+                  return match ? (locale === "ar" ? match.name_ar : match.name_en) : "—";
+                }}
               </SelectValue>
             </SelectTrigger>
             <SelectContent>
-              {categories.map((c) => (
+              {cats.map((c) => (
                 <SelectItem key={c.id} value={c.id}>
                   {locale === "ar" ? c.name_ar : c.name_en}
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
+          <QuickAddCategory
+            onCreated={(c) => {
+              setCats((prev) => [...prev, c]);
+              setCategoryId(c.id);
+            }}
+          />
         </div>
 
         <div className="flex flex-col gap-2">
