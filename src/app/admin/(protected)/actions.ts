@@ -109,6 +109,38 @@ export async function togglePublish(id: string, isPublished: boolean) {
   revalidatePath("/locations");
 }
 
+export async function createCategory(formData: FormData) {
+  const supabase = await createClient();
+  const name_ar = String(formData.get("name_ar") ?? "").trim();
+  const name_en = String(formData.get("name_en") ?? "").trim();
+  const icon = String(formData.get("icon") ?? "") || null;
+  if (!name_ar || !name_en) throw new Error("Both names are required");
+
+  const base = slugify(name_en) || "category";
+  const { data: existing } = await supabase.from("categories").select("slug").like("slug", `${base}%`);
+  const taken = new Set((existing ?? []).map((c) => c.slug));
+  let slug = base;
+  for (let i = 2; taken.has(slug); i++) slug = `${base}-${i}`;
+
+  const { error } = await supabase.from("categories").insert({ name_ar, name_en, slug, icon });
+  if (error) throw new Error(error.message);
+
+  revalidatePath("/admin/categories");
+  revalidatePath("/admin/locations/new");
+  revalidatePath("/");
+  revalidatePath("/locations");
+}
+
+export async function deleteCategory(id: string) {
+  const supabase = await createClient();
+  const { error } = await supabase.from("categories").delete().eq("id", id);
+  if (error) throw new Error(error.message);
+
+  revalidatePath("/admin/categories");
+  revalidatePath("/");
+  revalidatePath("/locations");
+}
+
 export async function createAdmin(formData: FormData) {
   const supabase = await createClient();
   const email = String(formData.get("email") ?? "").trim().toLowerCase();

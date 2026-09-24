@@ -1,19 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { Camera, Home, Trees, Landmark, Coffee, Factory, Sparkles } from "lucide-react";
+import { getCategoryIcon } from "@/lib/category-icons";
 import { useLocale } from "@/lib/i18n/locale-context";
 import { Reveal, RevealGroup, RevealItem } from "@/components/motion/reveal";
 import type { Category } from "@/lib/types";
-
-const ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
-  camera: Camera,
-  home: Home,
-  trees: Trees,
-  landmark: Landmark,
-  coffee: Coffee,
-  factory: Factory,
-};
 
 export function CategoryRail({ categories }: { categories: Category[] }) {
   const { locale, t } = useLocale();
@@ -27,7 +18,7 @@ export function CategoryRail({ categories }: { categories: Category[] }) {
       </Reveal>
       <RevealGroup className="flex gap-3 overflow-x-auto pb-2 md:flex-wrap md:justify-center md:overflow-visible md:pb-0">
         {categories.map((category) => {
-          const Icon = (category.icon && ICONS[category.icon]) || Sparkles;
+          const Icon = getCategoryIcon(category.icon);
           const name = locale === "ar" ? category.name_ar : category.name_en;
           return (
             <RevealItem key={category.id}>

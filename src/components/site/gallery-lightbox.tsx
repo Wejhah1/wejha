@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ChevronLeft, ChevronRight, X } from "lucide-react";
 import { useLocale } from "@/lib/i18n/locale-context";
 
@@ -8,12 +8,63 @@ export function GalleryLightbox({ images, alt }: { images: string[]; alt: string
   const { t } = useLocale();
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
 
+  const [dragX, setDragX] = useState(0);
+  const touchStart = useRef<{ x: number; y: number } | null>(null);
+  const swiped = useRef(false);
+
+  useEffect(() => {
+    if (activeIndex === null) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setActiveIndex(null);
+      if (e.key === "ArrowLeft") setActiveIndex((i) => (i === null ? null : (i + 1) % images.length));
+      if (e.key === "ArrowRight")
+        setActiveIndex((i) => (i === null ? null : (i - 1 + images.length) % images.length));
+    };
+    document.addEventListener("keydown", onKey);
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      document.body.style.overflow = "";
+    };
+  }, [activeIndex, images.length]);
+
   if (images.length === 0) return null;
 
   const close = () => setActiveIndex(null);
   const prev = () =>
     setActiveIndex((i) => (i === null ? null : (i - 1 + images.length) % images.length));
   const next = () => setActiveIndex((i) => (i === null ? null : (i + 1) % images.length));
+
+  const SWIPE_THRESHOLD = 35;
+
+  const onTouchStart = (e: React.TouchEvent) => {
+    const t = e.touches[0];
+    touchStart.current = { x: t.clientX, y: t.clientY };
+    swiped.current = false;
+  };
+
+  const onTouchMove = (e: React.TouchEvent) => {
+    if (!touchStart.current) return;
+    const t = e.touches[0];
+    const dx = t.clientX - touchStart.current.x;
+    const dy = t.clientY - touchStart.current.y;
+    if (Math.abs(dx) > Math.abs(dy)) setDragX(dx * 0.6);
+  };
+
+  const onTouchEnd = (e: React.TouchEvent) => {
+    const start = touchStart.current;
+    touchStart.current = null;
+    setDragX(0);
+    if (!start) return;
+    const t = e.changedTouches[0];
+    const dx = t.clientX - start.x;
+    const dy = t.clientY - start.y;
+    if (Math.abs(dx) >= SWIPE_THRESHOLD && Math.abs(dx) > Math.abs(dy)) {
+      swiped.current = true;
+      if (dx < 0) next();
+      else prev();
+    }
+  };
 
   return (
     <div>
@@ -39,8 +90,17 @@ export function GalleryLightbox({ images, alt }: { images: string[]; alt: string
 
       {activeIndex !== null && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 p-4"
-          onClick={close}
+          className="fixed inset-0 z-50 flex touch-pan-y items-center justify-center bg-black/90 p-4"
+          onClick={() => {
+            if (swiped.current) {
+              swiped.current = false;
+              return;
+            }
+            close();
+          }}
+          onTouchStart={onTouchStart}
+          onTouchMove={onTouchMove}
+          onTouchEnd={onTouchEnd}
           role="dialog"
           aria-modal="true"
         >
@@ -69,9 +129,17 @@ export function GalleryLightbox({ images, alt }: { images: string[]; alt: string
           <img
             src={images[activeIndex]}
             alt={`${alt} ${activeIndex + 1}`}
-            className="max-h-[85vh] max-w-full rounded-lg object-contain"
+            className="max-h-[85vh] max-w-full select-none rounded-lg object-contain"
+            style={{
+              transform: `translateX(${dragX}px)`,
+              transition: dragX === 0 ? "transform 150ms ease-out" : "none",
+            }}
+            draggable={false}
             onClick={(e) => e.stopPropagation()}
           />
+          <span className="pointer-events-none absolute bottom-5 start-1/2 -translate-x-1/2 rounded-full bg-white/10 px-3 py-1 text-xs text-white">
+            {activeIndex + 1} / {images.length}
+          </span>
 
           <button
             type="button"
