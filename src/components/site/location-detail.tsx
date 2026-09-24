@@ -12,7 +12,10 @@ export function LocationDetail({ location }: { location: Location }) {
   const { locale, t } = useLocale();
 
   const name = locale === "ar" ? location.name_ar : location.name_en;
-  const facts = locale === "ar" ? location.facts_ar : location.facts_en;
+  const factTexts = locale === "ar" ? location.facts_ar : location.facts_en;
+  const facts = factTexts
+    .map((text, i) => ({ text, icon: location.fact_icons?.[i] }))
+    .filter((f) => f.text.trim());
   const allImages = [location.cover_image_url, ...location.gallery_urls];
 
   return (

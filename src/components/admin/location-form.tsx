@@ -2,7 +2,6 @@
 
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import {
@@ -14,6 +13,7 @@ import {
 } from "@/components/ui/select";
 import { useState } from "react";
 import { CoverUploader, GalleryUploader } from "@/components/admin/image-uploader";
+import { FactsEditor } from "@/components/admin/facts-editor";
 import { QuickAddCategory } from "@/components/admin/quick-add-category";
 import { useLocale } from "@/lib/i18n/locale-context";
 import type { Category, City, Location } from "@/lib/types";
@@ -152,30 +152,7 @@ export function LocationForm({
 
       <GalleryUploader initialUrls={location?.gallery_urls} />
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <div className="flex flex-col gap-2">
-          <Label htmlFor="facts_ar">حقائق قصيرة (سطر لكل حقيقة، عربي)</Label>
-          <Textarea
-            id="facts_ar"
-            name="facts_ar"
-            rows={5}
-            dir="rtl"
-            placeholder={"داخلي وخارجي\nحتى 30 شخص\nباركينج متاح"}
-            defaultValue={location?.facts_ar.join("\n")}
-          />
-        </div>
-        <div className="flex flex-col gap-2">
-          <Label htmlFor="facts_en">Short facts (one per line, English)</Label>
-          <Textarea
-            id="facts_en"
-            name="facts_en"
-            rows={5}
-            dir="ltr"
-            placeholder={"Indoor & outdoor\nUp to 30 people\nParking available"}
-            defaultValue={location?.facts_en.join("\n")}
-          />
-        </div>
-      </div>
+      <FactsEditor location={location} />
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div className="flex flex-col gap-2">

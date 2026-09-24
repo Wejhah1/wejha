@@ -20,14 +20,21 @@ function clampPercent(value: FormDataEntryValue | null) {
 }
 
 function parseLocationForm(formData: FormData) {
-  const facts_ar = String(formData.get("facts_ar") ?? "")
-    .split("\n")
-    .map((f) => f.trim())
-    .filter(Boolean);
-  const facts_en = String(formData.get("facts_en") ?? "")
-    .split("\n")
-    .map((f) => f.trim())
-    .filter(Boolean);
+  let factRows: { ar?: unknown; en?: unknown; icon?: unknown }[] = [];
+  try {
+    const parsed = JSON.parse(String(formData.get("facts_json") ?? "[]"));
+    if (Array.isArray(parsed)) factRows = parsed;
+  } catch {}
+  const facts = factRows
+    .map((r) => ({
+      ar: String(r.ar ?? "").trim(),
+      en: String(r.en ?? "").trim(),
+      icon: String(r.icon ?? "check"),
+    }))
+    .filter((r) => r.ar || r.en);
+  const facts_ar = facts.map((f) => f.ar);
+  const facts_en = facts.map((f) => f.en);
+  const fact_icons = facts.map((f) => f.icon);
   const gallery_urls = String(formData.get("gallery_urls") ?? "")
     .split("\n")
     .map((f) => f.trim())
@@ -43,6 +50,7 @@ function parseLocationForm(formData: FormData) {
     price_per_day: Number(formData.get("price_per_day") ?? 0),
     facts_ar,
     facts_en,
+    fact_icons,
     cover_image_url: String(formData.get("cover_image_url") ?? ""),
     cover_focal_x: clampPercent(formData.get("cover_focal_x")),
     cover_focal_y: clampPercent(formData.get("cover_focal_y")),

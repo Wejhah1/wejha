@@ -30,6 +30,7 @@ export interface Location {
   price_per_day: number;
   facts_ar: string[];
   facts_en: string[];
+  fact_icons: string[];
   cover_image_url: string;
   cover_focal_x: number;
   cover_focal_y: number;
