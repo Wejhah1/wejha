@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRef } from "react";
 import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
-import { ArrowLeft, ArrowRight, MapPin, Users, Building2, CheckCircle2 } from "lucide-react";
+import { ArrowLeft, ArrowRight, MapPin, Users, Building2 } from "lucide-react";
 import { useLocale } from "@/lib/i18n/locale-context";
 import { ParallaxImage } from "@/components/motion/parallax-image";
 import type { Location } from "@/lib/types";
@@ -16,7 +16,6 @@ export function LocationHero({ location }: { location: Location }) {
   const name = locale === "ar" ? location.name_ar : location.name_en;
   const cityName = locale === "ar" ? location.city?.name_ar : location.city?.name_en;
   const categoryName = locale === "ar" ? location.category?.name_ar : location.category?.name_en;
-  const facts = locale === "ar" ? location.facts_ar : location.facts_en;
 
   const settingLabel = {
     indoor: t.browse.settingIndoor,
@@ -29,8 +28,6 @@ export function LocationHero({ location }: { location: Location }) {
   const mouseX = useMotionValue(0.5);
   const mouseY = useMotionValue(0.5);
   const springConfig = { stiffness: 60, damping: 20, mass: 0.6 };
-  const chipX = useSpring(useTransform(mouseX, [0, 1], [-10, 10]), springConfig);
-  const chipY = useSpring(useTransform(mouseY, [0, 1], [-6, 6]), springConfig);
   const titleX = useSpring(useTransform(mouseX, [0, 1], [6, -6]), springConfig);
 
   function handleMouseMove(e: React.MouseEvent<HTMLDivElement>) {
@@ -72,27 +69,6 @@ export function LocationHero({ location }: { location: Location }) {
           </Link>
         </div>
       </motion.div>
-
-      {facts.length > 0 && (
-        <motion.div
-          style={{ x: chipX, y: chipY, transformStyle: "preserve-3d" }}
-          className="absolute end-4 top-24 z-20 hidden max-w-[240px] flex-col items-end gap-2 sm:end-6 sm:flex lg:end-8"
-        >
-          {facts.slice(0, 4).map((fact, i) => (
-            <motion.span
-              key={i}
-              initial={{ opacity: 0, x: dir === "rtl" ? -16 : 16 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.3 + i * 0.08, duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-              className="flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1.5 text-xs font-medium text-white shadow-lg backdrop-blur-md"
-              style={{ transform: `translateZ(${20 + i * 10}px)` }}
-            >
-              <CheckCircle2 className="h-3 w-3 shrink-0 text-white/80" />
-              {fact}
-            </motion.span>
-          ))}
-        </motion.div>
-      )}
 
       <div className="absolute inset-x-0 bottom-0 z-20 px-4 pb-8 sm:px-6 lg:px-8">
         <motion.div style={{ x: titleX }} className="mx-auto max-w-6xl">
