@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutGrid, MapPinned, Users, UserCircle, Tags } from "lucide-react";
+import { Inbox, LayoutGrid, MapPinned, Users, UserCircle, Tags } from "lucide-react";
 import { useLocale } from "@/lib/i18n/locale-context";
 import { LogoutButton } from "@/components/admin/logout-button";
 import type { Admin } from "@/lib/types";
@@ -14,6 +14,7 @@ export function AdminShell({ admin, children }: { admin: Admin; children: React.
   const links = [
     { href: "/admin", label: t.admin.dashboard, icon: LayoutGrid, exact: true },
     { href: "/admin/locations/new", label: t.admin.addLocation, icon: MapPinned, exact: false },
+    { href: "/admin/requests", label: t.admin.requests, icon: Inbox, exact: false },
     { href: "/admin/categories", label: t.admin.categories, icon: Tags, exact: false },
     ...(admin.role === "super_admin"
       ? [{ href: "/admin/admins", label: t.admin.admins, icon: Users, exact: false }]

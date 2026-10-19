@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { Camera } from "lucide-react";
+import { Camera, Plus } from "lucide-react";
 import { useLocale } from "@/lib/i18n/locale-context";
 import { LocaleToggle } from "@/components/site/locale-toggle";
 import { Button } from "@/components/ui/button";
@@ -61,6 +61,17 @@ export function Navbar({ transparentUntilScroll = false }: { transparentUntilScr
         </nav>
 
         <div className="flex items-center gap-2">
+          <Button
+            size="sm"
+            nativeButton={false}
+            className="gap-1 rounded-full px-3"
+            render={
+              <Link href="/request-location">
+                <Plus className="h-3.5 w-3.5" />
+                {t.nav.addLocation}
+              </Link>
+            }
+          />
           <LocaleToggle />
         </div>
       </div>

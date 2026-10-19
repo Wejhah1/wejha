@@ -3,7 +3,15 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import type { AdminRole, Category, LocationSetting } from "@/lib/types";
+import { DEFAULT_FACT_ICON } from "@/lib/fact-icons";
+import { toWhatsAppNumber } from "@/lib/whatsapp";
+import type {
+  AdminRole,
+  Category,
+  LocationRequest,
+  LocationSetting,
+  RequestDecision,
+} from "@/lib/types";
 
 function slugify(input: string) {
   return input
@@ -68,20 +76,40 @@ export async function createLocation(formData: FormData) {
   } = await supabase.auth.getUser();
 
   const fields = parseLocationForm(formData);
-  const baseSlug = slugify(fields.name_en || fields.name_ar);
-  const slug = `${baseSlug}-${Math.random().toString(36).slice(2, 6)}`;
 
-  const { error } = await supabase.from("locations").insert({
-    ...fields,
-    slug,
-    created_by: user?.id ?? null,
-  });
+  const { data: created, error } = await supabase
+    .from("locations")
+    .insert({
+      ...fields,
+      slug: locationSlug(fields.name_en, fields.name_ar),
+      created_by: user?.id ?? null,
+    })
+    .select("id")
+    .single();
 
   if (error) throw new Error(error.message);
 
   revalidatePath("/admin");
   revalidatePath("/locations");
+
+  // Created from an owner's request after the admin edited it: mark the request
+  // and land on the requests page with the WhatsApp notification ready.
+  const fromRequest = String(formData.get("from_request") ?? "");
+  if (fromRequest) {
+    const { error: requestError } = await supabase
+      .from("location_requests")
+      .update({ status: "edited", location_id: created.id, decided_at: new Date().toISOString() })
+      .eq("id", fromRequest);
+    if (requestError) throw new Error(requestError.message);
+    revalidatePath("/admin/requests");
+    redirect(`/admin/requests?notify=${fromRequest}`);
+  }
+
   redirect("/admin");
+}
+
+function locationSlug(nameEn: string, nameAr: string) {
+  return `${slugify(nameEn || nameAr)}-${Math.random().toString(36).slice(2, 6)}`;
 }
 
 export async function updateLocation(id: string, formData: FormData) {
@@ -177,4 +205,99 @@ export async function removeAdmin(id: string) {
   if (error) throw new Error(error.message);
 
   revalidatePath("/admin/admins");
+}
+
+const REQUEST_SELECT = "*, category:categories(*), city:cities(*), location:locations(slug)";
+
+async function decideRequest(
+  id: string,
+  decision: RequestDecision,
+  patch: { location_id?: string; admin_note?: string | null } = {},
+) {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("location_requests")
+    .update({ status: decision, decided_at: new Date().toISOString(), ...patch })
+    .eq("id", id)
+    .select(REQUEST_SELECT)
+    .single();
+  if (error) throw new Error(error.message);
+
+  revalidatePath("/admin/requests");
+  return data as unknown as LocationRequest;
+}
+
+// Publishes the request exactly as the owner submitted it.
+export async function approveRequest(id: string) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  const { data: request, error: readError } = await supabase
+    .from("location_requests")
+    .select("*")
+    .eq("id", id)
+    .single();
+  if (readError) throw new Error(readError.message);
+  const r = request as LocationRequest;
+  if (r.status !== "new") throw new Error("Request already reviewed");
+
+  const [cover, ...gallery] = r.image_urls;
+  const { data: created, error } = await supabase
+    .from("locations")
+    .insert({
+      slug: locationSlug(r.name_en ?? "", r.name_ar),
+      name_ar: r.name_ar,
+      name_en: r.name_en || r.name_ar,
+      category_id: r.category_id,
+      city_id: r.city_id,
+      setting: r.setting,
+      price_per_day: r.price_per_day ?? 0,
+      capacity: r.capacity,
+      facts_ar: r.features,
+      facts_en: r.features,
+      fact_icons: r.features.map(() => DEFAULT_FACT_ICON),
+      cover_image_url: cover ?? "",
+      gallery_urls: gallery,
+      whatsapp_number: toWhatsAppNumber(r.owner_phone),
+      whatsapp_contact_name: r.owner_name,
+      is_published: true,
+      created_by: user?.id ?? null,
+    })
+    .select("id")
+    .single();
+  if (error) throw new Error(error.message);
+
+  revalidatePath("/admin");
+  revalidatePath("/locations");
+  revalidatePath("/");
+  return decideRequest(id, "approved", { location_id: created.id });
+}
+
+export async function rejectRequest(id: string, note: string) {
+  return decideRequest(id, "rejected", { admin_note: note.trim().slice(0, 1000) || null });
+}
+
+export async function updateWhatsAppTemplate(key: RequestDecision, body: string) {
+  const text = body.trim();
+  if (!text) throw new Error("Message cannot be empty");
+
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("whatsapp_templates")
+    .update({ body: text.slice(0, 2000), updated_at: new Date().toISOString() })
+    .eq("key", key);
+  if (error) throw new Error(error.message);
+
+  revalidatePath("/admin/requests");
+  revalidatePath("/admin/requests/messages");
+}
+
+export async function deleteRequest(id: string) {
+  const supabase = await createClient();
+  const { error } = await supabase.from("location_requests").delete().eq("id", id);
+  if (error) throw new Error(error.message);
+
+  revalidatePath("/admin/requests");
 }

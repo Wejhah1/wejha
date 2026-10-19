@@ -44,3 +44,18 @@ export function buildWhatsAppUrl({
 
   return `https://wa.me/${normalizePhone(phone)}?text=${encodeURIComponent(message)}`;
 }
+
+// Accepts local Saudi formats (05XXXXXXXX, 5XXXXXXXX) and international ones
+// (+9665…, 009665…) and returns the digits-only form wa.me expects.
+export function toWhatsAppNumber(phone: string) {
+  let digits = normalizePhone(phone);
+  if (digits.startsWith("00")) digits = digits.slice(2);
+  if (digits.length === 10 && digits.startsWith("05")) return `966${digits.slice(1)}`;
+  if (digits.length === 9 && digits.startsWith("5")) return `966${digits}`;
+  return digits;
+}
+
+export function buildWhatsAppMessageUrl(phone: string, message: string) {
+  const base = `https://wa.me/${toWhatsAppNumber(phone)}`;
+  return message ? `${base}?text=${encodeURIComponent(message)}` : base;
+}
