@@ -26,9 +26,22 @@ export interface MyRequestStatus {
 }
 
 const SETTINGS: LocationSetting[] = ["indoor", "outdoor", "both"];
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 function text(formData: FormData, key: string, max: number) {
   return String(formData.get(key) ?? "").trim().slice(0, max);
+}
+
+const OTHER = "other";
+
+// A chip from the list (a UUID) or "other" plus a typed name; null when neither is valid.
+function pick(formData: FormData, idKey: string, otherKey: string) {
+  const value = text(formData, idKey, 64);
+  if (value === OTHER) {
+    const other = text(formData, otherKey, 60);
+    return other.length >= 2 ? { [idKey]: null, [otherKey]: other } : null;
+  }
+  return UUID.test(value) ? { [idKey]: value, [otherKey]: null } : null;
 }
 
 function optionalNumber(formData: FormData, key: string) {
@@ -52,10 +65,10 @@ function parseList(formData: FormData, key: string) {
 function isRequestImageUrl(value: string) {
   try {
     const url = new URL(value);
-    const host = new URL(process.env.NEXT_PUBLIC_SUPABASE_URL!).host;
+    const supabase = new URL(process.env.NEXT_PUBLIC_SUPABASE_URL!);
     return (
-      url.protocol === "https:" &&
-      url.host === host &&
+      url.protocol === supabase.protocol &&
+      url.host === supabase.host &&
       url.pathname.startsWith(`/storage/v1/object/public/${REQUEST_IMAGES_BUCKET}/`)
     );
   } catch {
@@ -66,6 +79,10 @@ function isRequestImageUrl(value: string) {
 export async function submitLocationRequest(formData: FormData): Promise<SubmitRequestResult> {
   // Honeypot: real users never see or fill this field.
   if (String(formData.get("website") ?? "")) return { ok: true, id: null };
+
+  const category = pick(formData, "category_id", "category_other");
+  const city = pick(formData, "city_id", "city_other");
+  if (!category || !city) return { ok: false, error: "required" };
 
   const owner_name = text(formData, "owner_name", 120);
   const owner_phone = String(formData.get("owner_phone") ?? "").replace(/[^\d+]/g, "").slice(0, 20);
@@ -91,8 +108,8 @@ export async function submitLocationRequest(formData: FormData): Promise<SubmitR
     owner_email: text(formData, "owner_email", 200) || null,
     name_ar,
     name_en: text(formData, "name_en", 150) || null,
-    category_id: text(formData, "category_id", 64) || null,
-    city_id: text(formData, "city_id", 64) || null,
+    ...category,
+    ...city,
     district: text(formData, "district", 150) || null,
     maps_url: /^https?:\/\//.test(mapsUrl) ? mapsUrl : null,
     setting: SETTINGS.includes(settingRaw) ? settingRaw : "both",
@@ -113,8 +130,6 @@ export async function submitLocationRequest(formData: FormData): Promise<SubmitR
   revalidatePath("/admin/requests");
   return { ok: true, id };
 }
-
-const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 // Status of requests submitted from this device (ids kept in localStorage).
 export async function getMyRequestStatuses(ids: string[]): Promise<MyRequestStatus[]> {

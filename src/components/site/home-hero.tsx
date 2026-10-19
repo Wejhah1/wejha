@@ -139,25 +139,13 @@ export function HomeHero() {
           >
             <div className="absolute inset-0">
               <motion.div style={{ y: blob1Y }} className="absolute -start-32 -top-32 h-[32rem] w-[32rem]">
-                <motion.div
-                  animate={{ x: [0, 30, 0], y: [0, -20, 0] }}
-                  transition={{ duration: 22, repeat: Infinity, ease: "easeInOut" }}
-                  className="h-full w-full bg-[radial-gradient(closest-side,oklch(0.56_0.15_35),transparent)] opacity-25"
-                />
+                <div className="animate-drift-a h-full w-full bg-[radial-gradient(closest-side,oklch(0.56_0.15_35),transparent)] opacity-25" />
               </motion.div>
               <motion.div style={{ y: blob2Y }} className="absolute -end-24 top-1/3 h-[28rem] w-[28rem]">
-                <motion.div
-                  animate={{ x: [0, -24, 0], y: [0, 26, 0] }}
-                  transition={{ duration: 26, repeat: Infinity, ease: "easeInOut" }}
-                  className="h-full w-full bg-[radial-gradient(closest-side,oklch(0.58_0.09_120),transparent)] opacity-20"
-                />
+                <div className="animate-drift-b h-full w-full bg-[radial-gradient(closest-side,oklch(0.58_0.09_120),transparent)] opacity-20" />
               </motion.div>
               <motion.div style={{ y: blob3Y }} className="absolute bottom-[-10rem] start-1/4 h-[26rem] w-[26rem]">
-                <motion.div
-                  animate={{ x: [0, 18, 0], y: [0, -16, 0] }}
-                  transition={{ duration: 20, repeat: Infinity, ease: "easeInOut" }}
-                  className="h-full w-full bg-[radial-gradient(closest-side,oklch(0.7_0.1_75),transparent)] opacity-15"
-                />
+                <div className="animate-drift-c h-full w-full bg-[radial-gradient(closest-side,oklch(0.7_0.1_75),transparent)] opacity-15" />
               </motion.div>
             </div>
 
@@ -198,12 +186,9 @@ export function HomeHero() {
               style={{ opacity: hintOpacity }}
               className="pointer-events-none absolute inset-x-0 bottom-6 flex flex-col items-center gap-1 text-white/60"
             >
-              <motion.div
-                animate={{ y: [0, 8, 0] }}
-                transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut" }}
-              >
+              <div className="animate-bob-y">
                 <ChevronDown className="h-5 w-5" />
-              </motion.div>
+              </div>
             </motion.div>
           </motion.div>
         </div>

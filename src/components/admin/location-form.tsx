@@ -15,6 +15,7 @@ import { useEffect, useRef, useState } from "react";
 import { CoverUploader, GalleryUploader } from "@/components/admin/image-uploader";
 import { FactsEditor } from "@/components/admin/facts-editor";
 import { QuickAddCategory } from "@/components/admin/quick-add-category";
+import { QuickAddCity } from "@/components/admin/quick-add-city";
 import { useLocale } from "@/lib/i18n/locale-context";
 import { getSavedBookingNumber, saveBookingNumber } from "@/lib/booking-number";
 import type { Category, City, Location } from "@/lib/types";
@@ -26,6 +27,7 @@ export function LocationForm({
   location,
   defaults,
   fromRequestId,
+  suggested,
 }: {
   action: (formData: FormData) => void;
   categories: Category[];
@@ -33,6 +35,8 @@ export function LocationForm({
   location?: Location;
   defaults?: Partial<Location>;
   fromRequestId?: string;
+  // Type / city the owner typed under "Other" in their request.
+  suggested?: { category?: string | null; city?: string | null };
 }) {
   const { locale, t } = useLocale();
   const values = location ?? defaults;
@@ -47,6 +51,8 @@ export function LocationForm({
   }, [fromRequestId]);
   const [cats, setCats] = useState(categories);
   const [categoryId, setCategoryId] = useState<string | undefined>(values?.category_id ?? undefined);
+  const [cityList, setCityList] = useState(cities);
+  const [cityId, setCityId] = useState<string | undefined>(values?.city_id ?? undefined);
 
   return (
     <form
@@ -91,6 +97,7 @@ export function LocationForm({
             </SelectContent>
           </Select>
           <QuickAddCategory
+            suggestion={suggested?.category}
             onCreated={(c) => {
               setCats((prev) => [...prev, c]);
               setCategoryId(c.id);
@@ -100,26 +107,33 @@ export function LocationForm({
 
         <div className="flex flex-col gap-2">
           <Label>{t.browse.city}</Label>
-          <Select name="city_id" defaultValue={values?.city_id ?? undefined}>
+          <Select name="city_id" value={cityId} onValueChange={(v) => setCityId(v ?? undefined)}>
             <SelectTrigger>
               <SelectValue placeholder="—">
                 {(v: string | null) =>
-                  (v && cities.find((c) => c.id === v)
+                  (v && cityList.find((c) => c.id === v)
                     ? locale === "ar"
-                      ? cities.find((c) => c.id === v)!.name_ar
-                      : cities.find((c) => c.id === v)!.name_en
+                      ? cityList.find((c) => c.id === v)!.name_ar
+                      : cityList.find((c) => c.id === v)!.name_en
                     : null) || "—"
                 }
               </SelectValue>
             </SelectTrigger>
             <SelectContent>
-              {cities.map((c) => (
+              {cityList.map((c) => (
                 <SelectItem key={c.id} value={c.id}>
                   {locale === "ar" ? c.name_ar : c.name_en}
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
+          <QuickAddCity
+            suggestion={suggested?.city}
+            onCreated={(c) => {
+              setCityList((prev) => [...prev, c]);
+              setCityId(c.id);
+            }}
+          />
         </div>
 
         <div className="flex flex-col gap-2">

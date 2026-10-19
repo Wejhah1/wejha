@@ -8,6 +8,7 @@ import { toWhatsAppNumber } from "@/lib/whatsapp";
 import type {
   AdminRole,
   Category,
+  City,
   LocationRequest,
   LocationSetting,
   RequestDecision,
@@ -179,6 +180,26 @@ export async function createCategory(formData: FormData) {
   revalidatePath("/locations");
   revalidatePath("/locations/[slug]", "page");
   return data as Category;
+}
+
+export async function createCity(nameAr: string, nameEn: string) {
+  const name_ar = nameAr.trim();
+  const name_en = nameEn.trim();
+  if (!name_ar || !name_en) throw new Error("Both names are required");
+
+  const supabase = await createClient();
+  const base = slugify(name_en) || "city";
+  const { data: existing } = await supabase.from("cities").select("slug").like("slug", `${base}%`);
+  const taken = new Set((existing ?? []).map((c) => c.slug));
+  let slug = base;
+  for (let i = 2; taken.has(slug); i++) slug = `${base}-${i}`;
+
+  const { data, error } = await supabase.from("cities").insert({ name_ar, name_en, slug }).select().single();
+  if (error) throw new Error(error.message);
+
+  revalidatePath("/request-location");
+  revalidatePath("/locations");
+  return data as City;
 }
 
 export async function deleteCategory(id: string) {

@@ -45,6 +45,16 @@ export default async function NewLocationPage({ searchParams }: PageProps) {
         <p className="mb-6 max-w-3xl rounded-xl bg-accent px-4 py-3 text-sm">
           تعديل طلب «{(request as LocationRequest).owner_name}» — عدّل المعلومات ثم احفظ، وبعدها تقدر ترسل له
           رسالة واتساب بالنتيجة.
+          {(request as LocationRequest).category_other && (
+            <span className="mt-1 block font-medium">
+              نوع مقترح من صاحب الموقع: «{(request as LocationRequest).category_other}» — جاهز للإضافة تحت قائمة الأنواع.
+            </span>
+          )}
+          {(request as LocationRequest).city_other && (
+            <span className="mt-1 block font-medium">
+              مدينة مقترحة: «{(request as LocationRequest).city_other}» — جاهزة للإضافة تحت قائمة المدن.
+            </span>
+          )}
         </p>
       )}
       {!request && <div className="mb-4" />}
@@ -54,6 +64,11 @@ export default async function NewLocationPage({ searchParams }: PageProps) {
         cities={(cities ?? []) as City[]}
         defaults={request ? defaultsFromRequest(request as LocationRequest) : undefined}
         fromRequestId={request ? (request as LocationRequest).id : undefined}
+        suggested={
+          request
+            ? { category: (request as LocationRequest).category_other, city: (request as LocationRequest).city_other }
+            : undefined
+        }
       />
     </div>
   );

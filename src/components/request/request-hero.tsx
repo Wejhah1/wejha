@@ -23,16 +23,8 @@ export function RequestHero({ onStart, onShowGuide }: { onStart: () => void; onS
     <section className="px-3 sm:px-6 lg:px-8">
       <div className="relative mx-auto max-w-7xl overflow-hidden rounded-[2rem] bg-[#1a1310] text-white">
         <div aria-hidden className="pointer-events-none absolute inset-0">
-          <motion.div
-            animate={{ x: [0, 30, 0], y: [0, -20, 0] }}
-            transition={{ duration: 22, repeat: Infinity, ease: "easeInOut" }}
-            className="absolute -start-24 -top-24 h-[26rem] w-[26rem] bg-[radial-gradient(closest-side,oklch(0.56_0.15_35),transparent)] opacity-30"
-          />
-          <motion.div
-            animate={{ x: [0, -24, 0], y: [0, 26, 0] }}
-            transition={{ duration: 26, repeat: Infinity, ease: "easeInOut" }}
-            className="absolute -end-20 bottom-[-6rem] h-[24rem] w-[24rem] bg-[radial-gradient(closest-side,oklch(0.58_0.09_120),transparent)] opacity-25"
-          />
+          <div className="animate-drift-a absolute -start-24 -top-24 h-[26rem] w-[26rem] bg-[radial-gradient(closest-side,oklch(0.56_0.15_35),transparent)] opacity-30" />
+          <div className="animate-drift-b absolute -end-20 bottom-[-6rem] h-[24rem] w-[24rem] bg-[radial-gradient(closest-side,oklch(0.58_0.09_120),transparent)] opacity-25" />
           <div
             className="absolute inset-0 opacity-[0.07]"
             style={{
@@ -94,10 +86,9 @@ export function RequestHero({ onStart, onShowGuide }: { onStart: () => void; onS
                   className={i === 0 ? "relative" : "relative -mt-3"}
                   style={{ marginInlineStart: `${i * 1.75}rem`, zIndex: 3 - i }}
                 >
-                  <motion.div
-                    animate={{ y: [0, -6, 0] }}
-                    transition={{ duration: 5 + i, repeat: Infinity, ease: "easeInOut", delay: i * 0.6 }}
-                    className="flex items-center gap-4 rounded-2xl border border-white/10 bg-white/[0.07] p-4 shadow-2xl shadow-black/30 backdrop-blur-md"
+                  <div
+                    style={{ animationDuration: `${5 + i}s`, animationDelay: `${i * 0.6}s` }}
+                    className="animate-float-y flex items-center gap-4 rounded-2xl border border-white/10 bg-[#2a211c] p-4 shadow-2xl shadow-black/30"
                   >
                     <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground">
                       <Icon className="h-5 w-5" />
@@ -108,7 +99,7 @@ export function RequestHero({ onStart, onShowGuide }: { onStart: () => void; onS
                       </p>
                       <p className="truncate font-semibold">{step.title}</p>
                     </div>
-                  </motion.div>
+                  </div>
                 </motion.div>
               );
             })}

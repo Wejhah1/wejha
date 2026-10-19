@@ -62,7 +62,7 @@ export function LocationHero({ location }: { location: Location }) {
         <div className="mx-auto max-w-6xl">
           <Link
             href="/locations"
-            className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-4 py-2 text-sm font-medium text-white backdrop-blur-md transition-colors hover:bg-white/20"
+            className="inline-flex items-center gap-1.5 rounded-full bg-black/35 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-black/50"
           >
             <BackArrow className="h-4 w-4" />
             {t.location.backToBrowse}
@@ -77,7 +77,7 @@ export function LocationHero({ location }: { location: Location }) {
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.15, duration: 0.5 }}
-              className="mb-2 inline-block rounded-full bg-white/15 px-3 py-1 text-xs font-semibold text-white backdrop-blur-md"
+              className="mb-2 inline-block rounded-full bg-black/35 px-3 py-1 text-xs font-semibold text-white"
             >
               {categoryName}
             </motion.span>

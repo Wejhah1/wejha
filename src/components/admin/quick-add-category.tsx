@@ -9,10 +9,17 @@ import { Input } from "@/components/ui/input";
 import { createCategory } from "@/app/admin/(protected)/actions";
 import type { Category } from "@/lib/types";
 
-export function QuickAddCategory({ onCreated }: { onCreated: (category: Category) => void }) {
+export function QuickAddCategory({
+  onCreated,
+  suggestion,
+}: {
+  onCreated: (category: Category) => void;
+  // A type the location owner suggested: opens the form pre-filled with it.
+  suggestion?: string | null;
+}) {
   const { t } = useLocale();
-  const [open, setOpen] = useState(false);
-  const [nameAr, setNameAr] = useState("");
+  const [open, setOpen] = useState(!!suggestion);
+  const [nameAr, setNameAr] = useState(suggestion ?? "");
   const [nameEn, setNameEn] = useState("");
   const [icon, setIcon] = useState("sparkles");
   const [error, setError] = useState<string | null>(null);

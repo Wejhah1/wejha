@@ -35,26 +35,21 @@ export function RequestGuide({ open, onClose }: { open: boolean; onClose: (start
         if (!next) setStep([0, 1]);
       }}
     >
-      <DialogPrimitive.Portal>
-        <DialogPrimitive.Backdrop className="fixed inset-0 z-50 bg-[#1a1310]/60 backdrop-blur-sm duration-300 data-open:animate-in data-open:fade-in-0 data-closed:animate-out data-closed:fade-out-0" />
+      {/* Kept mounted (hidden) so opening is a visibility switch, not a full mount on a slow phone. */}
+      <DialogPrimitive.Portal keepMounted>
+        <DialogPrimitive.Backdrop className="fixed inset-0 z-50 bg-[#1a1310]/75 duration-300 data-open:animate-in data-open:fade-in-0 data-closed:animate-out data-closed:fade-out-0" />
         <DialogPrimitive.Popup
           dir={dir}
           className="fixed top-1/2 left-1/2 z-50 w-[calc(100%-2rem)] max-w-md -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-3xl bg-card text-card-foreground shadow-2xl ring-1 ring-foreground/10 outline-none duration-300 data-open:animate-in data-open:fade-in-0 data-open:zoom-in-90 data-open:slide-in-from-bottom-4 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95"
         >
           <div className="relative flex h-44 items-center justify-center overflow-hidden bg-[#1a1310]">
-            <motion.div
-              animate={{ scale: [1, 1.15, 1], opacity: [0.35, 0.5, 0.35] }}
-              transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-              className="absolute h-56 w-56 bg-[radial-gradient(closest-side,oklch(0.56_0.15_35),transparent)]"
-            />
+            <div className="animate-breathe absolute h-56 w-56 bg-[radial-gradient(closest-side,oklch(0.56_0.15_35),transparent)] opacity-35" />
             {[0, 1].map((ring) => (
-              <motion.span
+              <span
                 key={ring}
                 aria-hidden
-                initial={{ scale: 0.6, opacity: 0.5 }}
-                animate={{ scale: 1.9, opacity: 0 }}
-                transition={{ duration: 2.4, repeat: Infinity, delay: ring * 1.2, ease: "easeOut" }}
-                className="absolute h-20 w-20 rounded-full border border-white/40"
+                style={{ animationDelay: `${ring * 1.2}s` }}
+                className="animate-pulse-ring absolute h-20 w-20 rounded-full border border-white/40 opacity-0"
               />
             ))}
             <AnimatePresence mode="wait" initial={false}>

@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { Cairo, El_Messiri } from "next/font/google";
 import "./globals.css";
 import { LocaleProvider } from "@/lib/i18n/locale-context";
-import { SmoothScrollProvider } from "@/components/smooth-scroll-provider";
 import { AppShell } from "@/components/site/app-shell";
 
 const cairo = Cairo({
@@ -32,9 +31,7 @@ export default function RootLayout({
     <html lang="ar" dir="rtl" suppressHydrationWarning>
       <body className={`${cairo.variable} ${elMessiri.variable} font-sans antialiased`}>
         <LocaleProvider>
-          <SmoothScrollProvider>
-            <AppShell>{children}</AppShell>
-          </SmoothScrollProvider>
+          <AppShell>{children}</AppShell>
         </LocaleProvider>
       </body>
     </html>

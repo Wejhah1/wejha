@@ -66,7 +66,9 @@ export interface LocationRequest {
   name_ar: string;
   name_en: string | null;
   category_id: string | null;
+  category_other: string | null;
   city_id: string | null;
+  city_other: string | null;
   district: string | null;
   maps_url: string | null;
   setting: LocationSetting;

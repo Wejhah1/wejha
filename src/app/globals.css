@@ -151,3 +151,50 @@ html:lang(en) {
     @apply font-heading;
   }
 }
+/*
+ * Ambient loops (hero glows, floating cards, pulse rings). Plain CSS keyframes
+ * on transform/opacity run on the compositor; the same loops in framer-motion
+ * recalculated styles on the main thread every frame and made scrolling stutter.
+ */
+@keyframes drift-a {
+  50% { transform: translate3d(30px, -20px, 0); }
+}
+@keyframes drift-b {
+  50% { transform: translate3d(-24px, 26px, 0); }
+}
+@keyframes drift-c {
+  50% { transform: translate3d(18px, -16px, 0); }
+}
+@keyframes float-y {
+  50% { transform: translate3d(0, -6px, 0); }
+}
+@keyframes bob-y {
+  50% { transform: translate3d(0, 8px, 0); }
+}
+@keyframes breathe {
+  50% { transform: scale(1.15); opacity: 0.5; }
+}
+@keyframes pulse-ring {
+  from { transform: scale(0.6); opacity: 0.5; }
+  to { transform: scale(1.9); opacity: 0; }
+}
+
+@utility animate-drift-a { animation: drift-a 22s ease-in-out infinite; }
+@utility animate-drift-b { animation: drift-b 26s ease-in-out infinite; }
+@utility animate-drift-c { animation: drift-c 20s ease-in-out infinite; }
+@utility animate-float-y { animation: float-y 5s ease-in-out infinite; }
+@utility animate-bob-y { animation: bob-y 1.8s ease-in-out infinite; }
+@utility animate-breathe { animation: breathe 6s ease-in-out infinite; }
+@utility animate-pulse-ring { animation: pulse-ring 2.4s ease-out infinite; }
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-drift-a,
+  .animate-drift-b,
+  .animate-drift-c,
+  .animate-float-y,
+  .animate-bob-y,
+  .animate-breathe,
+  .animate-pulse-ring {
+    animation: none;
+  }
+}
