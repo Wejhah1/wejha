@@ -1,7 +1,7 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import { Navbar } from "@/components/site/navbar";
+import { SiteHeader } from "@/components/site/site-header";
 import { Footer } from "@/components/site/footer";
 import { ListYourSpaceCta } from "@/components/site/list-your-space-cta";
 
@@ -12,8 +12,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const showCta = pathname !== "/request-location" && !pathname.startsWith("/admin");
 
   return (
-    <div className="flex min-h-screen flex-col">
-      <Navbar overlay={isHome} />
+    <div className="relative flex min-h-screen flex-col">
+      <SiteHeader tone={isHome ? "dark" : "light"} />
       <main className="flex-1">{children}</main>
       {showCta && <ListYourSpaceCta />}
       <Footer />
