@@ -24,6 +24,7 @@ import { getCategoryIcon } from "@/lib/category-icons";
 import { REQUEST_MIN_PHOTOS } from "@/lib/location-requests";
 import { useLocale } from "@/lib/i18n/locale-context";
 import { submitLocationRequest } from "@/app/request-location/actions";
+import { saveRequest } from "@/lib/my-requests";
 import type { Category, City } from "@/lib/types";
 
 type SectionKey = "contact" | "place" | "details" | "photos";
@@ -192,6 +193,13 @@ export function RequestForm({ categories, cities }: { categories: Category[]; ci
       try {
         const result = await submitLocationRequest(formData);
         if (result.ok) {
+          if (result.id) {
+            saveRequest({
+              id: result.id,
+              name: String(formData.get("name_ar") ?? ""),
+              createdAt: new Date().toISOString(),
+            });
+          }
           setSubmitted(true);
           document.getElementById("request-form")?.scrollIntoView({ behavior: "smooth", block: "start" });
         } else {

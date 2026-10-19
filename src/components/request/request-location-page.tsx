@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { RequestHero } from "@/components/request/request-hero";
 import { RequestGuide } from "@/components/request/request-guide";
 import { RequestForm } from "@/components/request/request-form";
+import { MyRequests } from "@/components/request/my-requests";
 import type { Category, City } from "@/lib/types";
 
 const GUIDE_KEY = "wejha-request-guide-seen";
@@ -40,6 +41,7 @@ export function RequestLocationPage({ categories, cities }: { categories: Catego
   return (
     <div className="pb-16">
       <RequestHero onStart={scrollToForm} onShowGuide={() => setGuideOpen(true)} />
+      <MyRequests />
       <RequestForm categories={categories} cities={cities} />
       <RequestGuide open={guideOpen} onClose={closeGuide} />
     </div>
