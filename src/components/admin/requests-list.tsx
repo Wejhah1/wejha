@@ -19,10 +19,13 @@ import {
 import { useLocale } from "@/lib/i18n/locale-context";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { NotifyDialog } from "@/components/admin/notify-dialog";
 import { approveRequest, deleteRequest, rejectRequest } from "@/app/admin/(protected)/actions";
-import { buildWhatsAppMessageUrl } from "@/lib/whatsapp";
+import { buildWhatsAppMessageUrl, toWhatsAppNumber } from "@/lib/whatsapp";
+import { getSavedBookingNumber, saveBookingNumber } from "@/lib/booking-number";
 import type { LocationRequest, LocationRequestStatus, WhatsAppTemplate } from "@/lib/types";
 
 const STATUS_STYLES: Record<LocationRequestStatus, string> = {
@@ -106,20 +109,105 @@ function RejectDialog({
   );
 }
 
+function ApproveDialog({
+  request,
+  onClose,
+  onApproved,
+}: {
+  request: LocationRequest | null;
+  onClose: () => void;
+  onApproved: (updated: LocationRequest) => void;
+}) {
+  const { t } = useLocale();
+  const [number, setNumber] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [isPending, startTransition] = useTransition();
+
+  const submit = () => {
+    if (!request) return;
+    if (toWhatsAppNumber(number).length < 8) {
+      setError(t.admin.bookingNumberInvalid);
+      return;
+    }
+    setError(null);
+    startTransition(async () => {
+      try {
+        const updated = await approveRequest(request.id, number);
+        saveBookingNumber(number);
+        onApproved(updated);
+      } catch (e) {
+        setError(e instanceof Error ? e.message : "Error");
+      }
+    });
+  };
+
+  return (
+    <Dialog
+      open={!!request}
+      onOpenChange={(next) => !next && onClose()}
+      onOpenChangeComplete={(next) => {
+        if (next) setNumber(getSavedBookingNumber());
+        else setError(null);
+      }}
+    >
+      <DialogContent showCloseButton={false} className="gap-4 p-5 sm:max-w-md">
+        <DialogTitle className="text-base font-semibold">{t.admin.requestApproveTitle}</DialogTitle>
+        <DialogDescription>
+          «{request?.name_ar}» — {t.admin.requestApproveHint}
+        </DialogDescription>
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            submit();
+          }}
+          className="flex flex-col gap-2"
+        >
+          <Label htmlFor="booking_number">{t.admin.bookingNumber}</Label>
+          <Input
+            id="booking_number"
+            value={number}
+            onChange={(e) => setNumber(e.target.value)}
+            type="tel"
+            inputMode="tel"
+            dir="ltr"
+            autoFocus
+            placeholder="05XXXXXXXX"
+            className="h-10 rounded-xl text-start"
+          />
+          <p className="text-xs text-muted-foreground">{t.admin.bookingNumberHint}</p>
+          {error && <p className="text-sm text-destructive">{error}</p>}
+          <div className="mt-2 flex justify-end gap-2">
+            <Button type="button" variant="ghost" onClick={onClose} disabled={isPending}>
+              {t.admin.cancel}
+            </Button>
+            <Button
+              type="submit"
+              disabled={isPending}
+              className="gap-1.5 bg-brand text-brand-foreground hover:bg-brand/90"
+            >
+              {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
+              {t.admin.requestApprove}
+            </Button>
+          </div>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 function RequestCard({
   request,
-  onApproved,
+  onApprove,
   onReject,
   onNotify,
 }: {
   request: LocationRequest;
-  onApproved: (updated: LocationRequest) => void;
+  onApprove: () => void;
   onReject: () => void;
   onNotify: () => void;
 }) {
   const { locale, t } = useLocale();
   const [isPending, startTransition] = useTransition();
-  const [error, setError] = useState<string | null>(null);
   const lang = locale === "ar" ? "ar" : "en";
   const category = request.category ? request.category[`name_${lang}`] : null;
   const city = request.city ? request.city[`name_${lang}`] : null;
@@ -129,18 +217,6 @@ function RequestCard({
     both: t.browse.settingBoth,
   }[request.setting];
   const isNew = request.status === "new";
-
-  const approve = () => {
-    if (!confirm(t.admin.requestApproveConfirm)) return;
-    setError(null);
-    startTransition(async () => {
-      try {
-        onApproved(await approveRequest(request.id));
-      } catch (e) {
-        setError(e instanceof Error ? e.message : "Error");
-      }
-    });
-  };
 
   return (
     <motion.article
@@ -231,8 +307,8 @@ function RequestCard({
 
         {isNew ? (
           <div className="flex flex-wrap items-center gap-2 border-t border-border/60 pt-4">
-            <Button onClick={approve} disabled={isPending} className="gap-1.5 bg-brand text-brand-foreground hover:bg-brand/90">
-              {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
+            <Button onClick={onApprove} disabled={isPending} className="gap-1.5 bg-brand text-brand-foreground hover:bg-brand/90">
+              <Check className="h-4 w-4" />
               {t.admin.requestApprove}
             </Button>
             <Button
@@ -275,8 +351,6 @@ function RequestCard({
             )}
           </div>
         )}
-        {error && <p className="text-sm text-destructive">{error}</p>}
-
         <div className="flex flex-wrap items-center gap-1 text-xs text-muted-foreground">
           <span>
             {new Date(request.created_at).toLocaleString(locale === "ar" ? "ar-SA-u-ca-gregory" : "en-GB", {
@@ -346,6 +420,7 @@ export function RequestsList({
   const [requests, setRequests] = useState(initialRequests);
   const [filter, setFilter] = useState<Filter>("all");
   const [notifying, setNotifying] = useState<LocationRequest | null>(null);
+  const [approving, setApproving] = useState<LocationRequest | null>(null);
   const [rejecting, setRejecting] = useState<LocationRequest | null>(null);
 
   // Server data wins after a revalidation (e.g. a delete).
@@ -430,7 +505,7 @@ export function RequestsList({
             <RequestCard
               key={request.id}
               request={request}
-              onApproved={replace}
+              onApprove={() => setApproving(request)}
               onReject={() => setRejecting(request)}
               onNotify={() => setNotifying(request)}
             />
@@ -438,6 +513,14 @@ export function RequestsList({
         </AnimatePresence>
       )}
 
+      <ApproveDialog
+        request={approving}
+        onClose={() => setApproving(null)}
+        onApproved={(updated) => {
+          setApproving(null);
+          replace(updated);
+        }}
+      />
       <RejectDialog
         request={rejecting}
         onClose={() => setRejecting(null)}

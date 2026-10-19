@@ -98,7 +98,11 @@ export const dictionary = {
       },
       requestFilterAll: "الكل",
       requestApprove: "تأكيد ونشر",
-      requestApproveConfirm: "نشر الموقع على المنصة بنفس المعلومات اللي أرسلها صاحبه؟",
+      requestApproveTitle: "تأكيد ونشر الموقع",
+      requestApproveHint: "بيتنشر الموقع بنفس المعلومات اللي أرسلها صاحبه.",
+      bookingNumber: "رقم واتساب الحجز",
+      bookingNumberHint: "طلبات الحجز من الزوار بتوصل على هذا الرقم، مو على رقم صاحب الموقع",
+      bookingNumberInvalid: "أدخل رقم واتساب صحيح",
       requestEdit: "تعديل ثم نشر",
       requestReject: "رفض",
       requestRejectTitle: "رفض الطلب",
@@ -142,7 +146,7 @@ export const dictionary = {
       howItWorks: "كيف يعمل؟",
       perks: [
         { title: "صفحة احترافية لموقعك", body: "نعرض موقعك بصور ومعلومات مرتبة تساعد المصوّرين يقررون بسرعة" },
-        { title: "الطلبات توصلك على واتساب", body: "اللي يبي يحجز يتواصل معك مباشرة على رقمك بدون وسيط" },
+        { title: "نبلغك بالنتيجة على واتساب", body: "بعد مراجعة طلبك نرسل لك النتيجة مباشرة على رقمك" },
         { title: "مراجعة قبل النشر", body: "نراجع كل طلب ونتواصل معك لو احتجنا نكمّل أي معلومة" },
       ],
       formTitle: "نموذج طلب إضافة موقع",
@@ -150,7 +154,7 @@ export const dictionary = {
       required: "مطلوب",
       optional: "اختياري",
       sections: {
-        contact: { title: "بيانات التواصل", hint: "عشان نقدر نتواصل معك ونربط طلبات الحجز برقمك" },
+        contact: { title: "بيانات التواصل", hint: "عشان نقدر نتواصل معك ونبلغك بنتيجة الطلب" },
         place: { title: "معلومات الموقع", hint: "اسم الموقع ونوعه ومكانه بالضبط" },
         details: { title: "التفاصيل والسعر", hint: "كل ما كانت التفاصيل أوضح، كانت الحجوزات أسهل" },
         photos: { title: "صور الموقع", hint: "الصور هي أول شي يشوفه المصوّر — اختر أفضلها" },
@@ -160,7 +164,7 @@ export const dictionary = {
         ownerNamePh: "مثال: محمد العتيبي",
         ownerPhone: "رقم الواتساب",
         ownerPhonePh: "05XXXXXXXX",
-        ownerPhoneHint: "بنرسلك نتيجة الطلب عليه، وعليه بتوصلك طلبات الحجز",
+        ownerPhoneHint: "بنرسلك نتيجة مراجعة الطلب عليه",
         ownerEmail: "البريد الإلكتروني",
         ownerEmailPh: "name@example.com",
         nameAr: "اسم الموقع",
@@ -244,7 +248,7 @@ export const dictionary = {
         steps: [
           {
             title: "عرّفنا بنفسك",
-            body: "نحتاج اسمك ورقم الواتساب، لأن طلبات الحجز توصلك عليه مباشرة.",
+            body: "نحتاج اسمك ورقم الواتساب عشان نتواصل معك ونبلغك بنتيجة الطلب.",
             points: ["الاسم الكامل", "رقم واتساب فعّال", "البريد الإلكتروني (اختياري)"],
           },
           {
@@ -361,7 +365,11 @@ export const dictionary = {
       },
       requestFilterAll: "All",
       requestApprove: "Approve & publish",
-      requestApproveConfirm: "Publish this location with the details exactly as the owner submitted them?",
+      requestApproveTitle: "Approve & publish",
+      requestApproveHint: "The location will be published with the details exactly as the owner submitted them.",
+      bookingNumber: "Booking WhatsApp number",
+      bookingNumberHint: "Visitors' booking requests go to this number, not to the location owner",
+      bookingNumberInvalid: "Enter a valid WhatsApp number",
       requestEdit: "Edit, then publish",
       requestReject: "Reject",
       requestRejectTitle: "Reject request",
@@ -405,7 +413,7 @@ export const dictionary = {
       howItWorks: "How it works",
       perks: [
         { title: "A polished page for your space", body: "Clear photos and details help filmmakers decide fast" },
-        { title: "Bookings come to your WhatsApp", body: "People who want to book contact you directly, no middleman" },
+        { title: "We reply on WhatsApp", body: "Once your request is reviewed, we send you the result directly" },
         { title: "Reviewed before publishing", body: "We review every request and reach out if anything is missing" },
       ],
       formTitle: "Location listing request",
@@ -413,7 +421,7 @@ export const dictionary = {
       required: "Required",
       optional: "Optional",
       sections: {
-        contact: { title: "Contact details", hint: "So we can reach you and route booking requests to you" },
+        contact: { title: "Contact details", hint: "So we can reach you and let you know the result" },
         place: { title: "About the location", hint: "Its name, type and exact whereabouts" },
         details: { title: "Details & pricing", hint: "The clearer the details, the easier the bookings" },
         photos: { title: "Photos", hint: "Photos are the first thing filmmakers see — pick your best" },
@@ -423,7 +431,7 @@ export const dictionary = {
         ownerNamePh: "e.g. Mohammed Alotaibi",
         ownerPhone: "WhatsApp number",
         ownerPhonePh: "05XXXXXXXX",
-        ownerPhoneHint: "We'll send the review result here, and booking requests will reach you on it",
+        ownerPhoneHint: "We'll send you the review result on this number",
         ownerEmail: "Email",
         ownerEmailPh: "name@example.com",
         nameAr: "Location name",
@@ -507,7 +515,7 @@ export const dictionary = {
         steps: [
           {
             title: "Tell us who you are",
-            body: "We need your name and WhatsApp number — booking requests go straight to it.",
+            body: "We need your name and WhatsApp number to reach you and share the result.",
             points: ["Full name", "An active WhatsApp number", "Email (optional)"],
           },
           {

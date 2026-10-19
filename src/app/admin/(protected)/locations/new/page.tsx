@@ -2,7 +2,6 @@ import { createClient } from "@/lib/supabase/server";
 import { LocationForm } from "@/components/admin/location-form";
 import { createLocation } from "@/app/admin/(protected)/actions";
 import { DEFAULT_FACT_ICON } from "@/lib/fact-icons";
-import { toWhatsAppNumber } from "@/lib/whatsapp";
 import type { Category, City, Location, LocationRequest } from "@/lib/types";
 
 interface PageProps {
@@ -24,8 +23,6 @@ function defaultsFromRequest(request: LocationRequest): Partial<Location> {
     facts_ar: request.features,
     facts_en: request.features.map(() => ""),
     fact_icons: request.features.map(() => DEFAULT_FACT_ICON),
-    whatsapp_number: toWhatsAppNumber(request.owner_phone),
-    whatsapp_contact_name: request.owner_name,
     is_published: true,
   };
 }
