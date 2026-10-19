@@ -1,13 +1,42 @@
 import { createClient } from "@/lib/supabase/server";
 import { LocationForm } from "@/components/admin/location-form";
 import { createLocation } from "@/app/admin/(protected)/actions";
-import type { Category, City } from "@/lib/types";
+import { DEFAULT_FACT_ICON } from "@/lib/fact-icons";
+import type { Category, City, Location, LocationRequest } from "@/lib/types";
 
-export default async function NewLocationPage() {
+interface PageProps {
+  searchParams: Promise<{ from?: string }>;
+}
+
+function defaultsFromRequest(request: LocationRequest): Partial<Location> {
+  const [cover, ...gallery] = request.image_urls;
+  return {
+    name_ar: request.name_ar,
+    name_en: request.name_en ?? "",
+    category_id: request.category_id,
+    city_id: request.city_id,
+    setting: request.setting,
+    price_per_day: request.price_per_day ?? undefined,
+    capacity: request.capacity,
+    cover_image_url: cover ?? "",
+    gallery_urls: gallery,
+    facts_ar: request.features,
+    facts_en: request.features.map(() => ""),
+    fact_icons: request.features.map(() => DEFAULT_FACT_ICON),
+    whatsapp_number: request.owner_phone.replace(/^0(?=5)/, "966"),
+    whatsapp_contact_name: request.owner_name,
+  };
+}
+
+export default async function NewLocationPage({ searchParams }: PageProps) {
+  const { from } = await searchParams;
   const supabase = await createClient();
-  const [{ data: categories }, { data: cities }] = await Promise.all([
+  const [{ data: categories }, { data: cities }, { data: request }] = await Promise.all([
     supabase.from("categories").select("*").order("name_ar"),
     supabase.from("cities").select("*").order("name_ar"),
+    from
+      ? supabase.from("location_requests").select("*").eq("id", from).maybeSingle()
+      : Promise.resolve({ data: null }),
   ]);
 
   return (
@@ -17,6 +46,8 @@ export default async function NewLocationPage() {
         action={createLocation}
         categories={(categories ?? []) as Category[]}
         cities={(cities ?? []) as City[]}
+        defaults={request ? defaultsFromRequest(request as LocationRequest) : undefined}
+        fromRequestId={request ? (request as LocationRequest).id : undefined}
       />
     </div>
   );

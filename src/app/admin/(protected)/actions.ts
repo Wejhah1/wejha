@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import type { AdminRole, Category, LocationSetting } from "@/lib/types";
+import type { AdminRole, Category, LocationRequestStatus, LocationSetting } from "@/lib/types";
 
 function slugify(input: string) {
   return input
@@ -78,6 +78,12 @@ export async function createLocation(formData: FormData) {
   });
 
   if (error) throw new Error(error.message);
+
+  const fromRequest = String(formData.get("from_request") ?? "");
+  if (fromRequest) {
+    await supabase.from("location_requests").update({ status: "added" }).eq("id", fromRequest);
+    revalidatePath("/admin/requests");
+  }
 
   revalidatePath("/admin");
   revalidatePath("/locations");
@@ -177,4 +183,20 @@ export async function removeAdmin(id: string) {
   if (error) throw new Error(error.message);
 
   revalidatePath("/admin/admins");
+}
+
+export async function updateRequestStatus(id: string, status: LocationRequestStatus) {
+  const supabase = await createClient();
+  const { error } = await supabase.from("location_requests").update({ status }).eq("id", id);
+  if (error) throw new Error(error.message);
+
+  revalidatePath("/admin/requests");
+}
+
+export async function deleteRequest(id: string) {
+  const supabase = await createClient();
+  const { error } = await supabase.from("location_requests").delete().eq("id", id);
+  if (error) throw new Error(error.message);
+
+  revalidatePath("/admin/requests");
 }

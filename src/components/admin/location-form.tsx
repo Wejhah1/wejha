@@ -23,26 +23,32 @@ export function LocationForm({
   categories,
   cities,
   location,
+  defaults,
+  fromRequestId,
 }: {
   action: (formData: FormData) => void;
   categories: Category[];
   cities: City[];
   location?: Location;
+  defaults?: Partial<Location>;
+  fromRequestId?: string;
 }) {
   const { locale, t } = useLocale();
+  const values = location ?? defaults;
   const [cats, setCats] = useState(categories);
-  const [categoryId, setCategoryId] = useState<string | undefined>(location?.category_id ?? undefined);
+  const [categoryId, setCategoryId] = useState<string | undefined>(values?.category_id ?? undefined);
 
   return (
     <form action={action} className="flex max-w-3xl flex-col gap-6">
+      {fromRequestId && <input type="hidden" name="from_request" value={fromRequestId} />}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div className="flex flex-col gap-2">
           <Label htmlFor="name_ar">الاسم (عربي)</Label>
-          <Input id="name_ar" name="name_ar" required defaultValue={location?.name_ar} dir="rtl" />
+          <Input id="name_ar" name="name_ar" required defaultValue={values?.name_ar} dir="rtl" />
         </div>
         <div className="flex flex-col gap-2">
           <Label htmlFor="name_en">Name (English)</Label>
-          <Input id="name_en" name="name_en" required defaultValue={location?.name_en} dir="ltr" />
+          <Input id="name_en" name="name_en" required defaultValue={values?.name_en} dir="ltr" />
         </div>
       </div>
 
@@ -80,7 +86,7 @@ export function LocationForm({
 
         <div className="flex flex-col gap-2">
           <Label>{t.browse.city}</Label>
-          <Select name="city_id" defaultValue={location?.city_id ?? undefined}>
+          <Select name="city_id" defaultValue={values?.city_id ?? undefined}>
             <SelectTrigger>
               <SelectValue placeholder="—">
                 {(v: string | null) =>
@@ -104,7 +110,7 @@ export function LocationForm({
 
         <div className="flex flex-col gap-2">
           <Label>{t.browse.setting}</Label>
-          <Select name="setting" defaultValue={location?.setting ?? "both"}>
+          <Select name="setting" defaultValue={values?.setting ?? "both"}>
             <SelectTrigger>
               <SelectValue>
                 {(v: string) =>
@@ -134,25 +140,25 @@ export function LocationForm({
             type="number"
             min={0}
             required
-            defaultValue={location?.price_per_day}
+            defaultValue={values?.price_per_day}
           />
         </div>
         <div className="flex flex-col gap-2">
           <Label htmlFor="capacity">{t.location.capacity}</Label>
-          <Input id="capacity" name="capacity" type="number" min={0} defaultValue={location?.capacity ?? ""} />
+          <Input id="capacity" name="capacity" type="number" min={0} defaultValue={values?.capacity ?? ""} />
         </div>
       </div>
 
       <CoverUploader
-        initialUrl={location?.cover_image_url}
+        initialUrl={values?.cover_image_url}
         initialFocal={
           location ? { x: location.cover_focal_x, y: location.cover_focal_y } : undefined
         }
       />
 
-      <GalleryUploader initialUrls={location?.gallery_urls} />
+      <GalleryUploader initialUrls={values?.gallery_urls} />
 
-      <FactsEditor location={location} />
+      <FactsEditor location={values as Location | undefined} />
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div className="flex flex-col gap-2">
@@ -163,7 +169,7 @@ export function LocationForm({
             required
             dir="ltr"
             placeholder="9665XXXXXXXX"
-            defaultValue={location?.whatsapp_number}
+            defaultValue={values?.whatsapp_number}
           />
         </div>
         <div className="flex flex-col gap-2">
@@ -171,13 +177,13 @@ export function LocationForm({
           <Input
             id="whatsapp_contact_name"
             name="whatsapp_contact_name"
-            defaultValue={location?.whatsapp_contact_name ?? ""}
+            defaultValue={values?.whatsapp_contact_name ?? ""}
           />
         </div>
       </div>
 
       <div className="flex items-center gap-3">
-        <Switch id="is_published" name="is_published" defaultChecked={location?.is_published} />
+        <Switch id="is_published" name="is_published" defaultChecked={values?.is_published} />
         <Label htmlFor="is_published">{t.admin.published}</Label>
       </div>
 
