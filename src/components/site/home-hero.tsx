@@ -142,21 +142,21 @@ export function HomeHero() {
                 <motion.div
                   animate={{ x: [0, 30, 0], y: [0, -20, 0] }}
                   transition={{ duration: 22, repeat: Infinity, ease: "easeInOut" }}
-                  className="h-full w-full rounded-full bg-[oklch(0.56_0.15_35)] opacity-25 blur-[110px]"
+                  className="h-full w-full bg-[radial-gradient(closest-side,oklch(0.56_0.15_35),transparent)] opacity-25"
                 />
               </motion.div>
               <motion.div style={{ y: blob2Y }} className="absolute -end-24 top-1/3 h-[28rem] w-[28rem]">
                 <motion.div
                   animate={{ x: [0, -24, 0], y: [0, 26, 0] }}
                   transition={{ duration: 26, repeat: Infinity, ease: "easeInOut" }}
-                  className="h-full w-full rounded-full bg-[oklch(0.58_0.09_120)] opacity-20 blur-[110px]"
+                  className="h-full w-full bg-[radial-gradient(closest-side,oklch(0.58_0.09_120),transparent)] opacity-20"
                 />
               </motion.div>
               <motion.div style={{ y: blob3Y }} className="absolute bottom-[-10rem] start-1/4 h-[26rem] w-[26rem]">
                 <motion.div
                   animate={{ x: [0, 18, 0], y: [0, -16, 0] }}
                   transition={{ duration: 20, repeat: Infinity, ease: "easeInOut" }}
-                  className="h-full w-full rounded-full bg-[oklch(0.7_0.1_75)] opacity-15 blur-[100px]"
+                  className="h-full w-full bg-[radial-gradient(closest-side,oklch(0.7_0.1_75),transparent)] opacity-15"
                 />
               </motion.div>
             </div>

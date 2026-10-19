@@ -34,6 +34,22 @@ function parseList(formData: FormData, key: string) {
   }
 }
 
+// Only accept photos uploaded to our own request bucket. Compared by host and
+// path so a trailing slash in the configured Supabase URL can't reject them all.
+function isRequestImageUrl(value: string) {
+  try {
+    const url = new URL(value);
+    const host = new URL(process.env.NEXT_PUBLIC_SUPABASE_URL!).host;
+    return (
+      url.protocol === "https:" &&
+      url.host === host &&
+      url.pathname.startsWith(`/storage/v1/object/public/${REQUEST_IMAGES_BUCKET}/`)
+    );
+  } catch {
+    return false;
+  }
+}
+
 export async function submitLocationRequest(formData: FormData): Promise<SubmitRequestResult> {
   // Honeypot: real users never see or fill this field.
   if (String(formData.get("website") ?? "")) return { ok: true };
@@ -45,10 +61,7 @@ export async function submitLocationRequest(formData: FormData): Promise<SubmitR
     return { ok: false, error: "required" };
   }
 
-  const imagePrefix = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/${REQUEST_IMAGES_BUCKET}/`;
-  const image_urls = parseList(formData, "image_urls")
-    .filter((u) => u.startsWith(imagePrefix))
-    .slice(0, REQUEST_MAX_PHOTOS);
+  const image_urls = parseList(formData, "image_urls").filter(isRequestImageUrl).slice(0, REQUEST_MAX_PHOTOS);
   if (image_urls.length < REQUEST_MIN_PHOTOS) return { ok: false, error: "photos" };
 
   const settingRaw = String(formData.get("setting") ?? "both") as LocationSetting;

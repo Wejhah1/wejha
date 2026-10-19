@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase/server";
+import { createPublicClient } from "@/lib/supabase/public";
 import type { Location, LocationSetting } from "@/lib/types";
 
 export interface LocationFilters {
@@ -13,7 +13,7 @@ export interface LocationFilters {
 const LOCATION_SELECT = "*, category:categories(*), city:cities(*)";
 
 export async function getPublishedLocations(filters: LocationFilters = {}) {
-  const supabase = await createClient();
+  const supabase = createPublicClient();
   let query = supabase
     .from("locations")
     .select(LOCATION_SELECT)
@@ -43,7 +43,7 @@ export async function getPublishedLocations(filters: LocationFilters = {}) {
 }
 
 export async function getFeaturedLocations(limit = 6) {
-  const supabase = await createClient();
+  const supabase = createPublicClient();
   const { data, error } = await supabase
     .from("locations")
     .select(LOCATION_SELECT)
@@ -56,7 +56,7 @@ export async function getFeaturedLocations(limit = 6) {
 }
 
 export async function getLocationBySlug(slug: string) {
-  const supabase = await createClient();
+  const supabase = createPublicClient();
   const { data, error } = await supabase
     .from("locations")
     .select(LOCATION_SELECT)
@@ -69,14 +69,14 @@ export async function getLocationBySlug(slug: string) {
 }
 
 export async function getCategories() {
-  const supabase = await createClient();
+  const supabase = createPublicClient();
   const { data, error } = await supabase.from("categories").select("*").order("name_ar");
   if (error) throw error;
   return data ?? [];
 }
 
 export async function getCities() {
-  const supabase = await createClient();
+  const supabase = createPublicClient();
   const { data, error } = await supabase.from("cities").select("*").order("name_ar");
   if (error) throw error;
   return data ?? [];
