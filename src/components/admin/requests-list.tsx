@@ -1,29 +1,125 @@
 "use client";
 
-import { useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import Link from "next/link";
-import { Inbox, MapPin, MessageCircle, Plus, Trash2 } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { AnimatePresence, motion } from "framer-motion";
+import {
+  Check,
+  ExternalLink,
+  Inbox,
+  Loader2,
+  MapPin,
+  MessageCircle,
+  MessageSquareText,
+  Pencil,
+  Trash2,
+  X,
+} from "lucide-react";
 import { useLocale } from "@/lib/i18n/locale-context";
 import { Button } from "@/components/ui/button";
-import { deleteRequest, updateRequestStatus } from "@/app/admin/(protected)/actions";
-import type { LocationRequest, LocationRequestStatus } from "@/lib/types";
-
-const STATUSES: LocationRequestStatus[] = ["new", "contacted", "added", "rejected"];
+import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
+import { NotifyDialog } from "@/components/admin/notify-dialog";
+import { approveRequest, deleteRequest, rejectRequest } from "@/app/admin/(protected)/actions";
+import { buildWhatsAppMessageUrl } from "@/lib/whatsapp";
+import type { LocationRequest, LocationRequestStatus, WhatsAppTemplate } from "@/lib/types";
 
 const STATUS_STYLES: Record<LocationRequestStatus, string> = {
   new: "bg-primary text-primary-foreground",
-  contacted: "bg-chart-2 text-white",
-  added: "bg-brand text-brand-foreground",
+  approved: "bg-brand text-brand-foreground",
+  edited: "bg-brand text-brand-foreground",
   rejected: "bg-muted-foreground/20 text-foreground",
 };
 
-function whatsappHref(phone: string) {
-  return `https://wa.me/${phone.replace(/\D/g, "").replace(/^0(?=5)/, "966")}`;
+type Filter = "all" | "new" | "approved" | "rejected";
+
+function matches(filter: Filter, status: LocationRequestStatus) {
+  if (filter === "all") return true;
+  if (filter === "approved") return status === "approved" || status === "edited";
+  return status === filter;
 }
 
-function RequestCard({ request }: { request: LocationRequest }) {
+function RejectDialog({
+  request,
+  onClose,
+  onRejected,
+}: {
+  request: LocationRequest | null;
+  onClose: () => void;
+  onRejected: (updated: LocationRequest) => void;
+}) {
+  const { t } = useLocale();
+  const [note, setNote] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [isPending, startTransition] = useTransition();
+
+  return (
+    <Dialog
+      open={!!request}
+      onOpenChange={(next) => !next && onClose()}
+      onOpenChangeComplete={(next) => {
+        if (!next) {
+          setNote("");
+          setError(null);
+        }
+      }}
+    >
+      <DialogContent showCloseButton={false} className="gap-4 p-5 sm:max-w-md">
+        <DialogTitle className="text-base font-semibold">{t.admin.requestRejectTitle}</DialogTitle>
+        <DialogDescription>
+          «{request?.name_ar}» — {t.admin.requestRejectHint}
+        </DialogDescription>
+        <Textarea
+          value={note}
+          onChange={(e) => setNote(e.target.value)}
+          maxLength={1000}
+          rows={3}
+          placeholder={t.admin.requestRejectPh}
+          className="rounded-xl"
+        />
+        {error && <p className="text-sm text-destructive">{error}</p>}
+        <div className="flex justify-end gap-2">
+          <Button variant="ghost" onClick={onClose} disabled={isPending}>
+            {t.admin.cancel}
+          </Button>
+          <Button
+            variant="destructive"
+            disabled={isPending}
+            onClick={() =>
+              request &&
+              startTransition(async () => {
+                try {
+                  onRejected(await rejectRequest(request.id, note));
+                } catch (e) {
+                  setError(e instanceof Error ? e.message : "Error");
+                }
+              })
+            }
+          >
+            {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <X className="h-4 w-4" />}
+            {t.admin.requestRejectConfirm}
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function RequestCard({
+  request,
+  onApproved,
+  onReject,
+  onNotify,
+}: {
+  request: LocationRequest;
+  onApproved: (updated: LocationRequest) => void;
+  onReject: () => void;
+  onNotify: () => void;
+}) {
   const { locale, t } = useLocale();
   const [isPending, startTransition] = useTransition();
+  const [error, setError] = useState<string | null>(null);
   const lang = locale === "ar" ? "ar" : "en";
   const category = request.category ? request.category[`name_${lang}`] : null;
   const city = request.city ? request.city[`name_${lang}`] : null;
@@ -32,12 +128,30 @@ function RequestCard({ request }: { request: LocationRequest }) {
     outdoor: t.browse.settingOutdoor,
     both: t.browse.settingBoth,
   }[request.setting];
+  const isNew = request.status === "new";
+
+  const approve = () => {
+    if (!confirm(t.admin.requestApproveConfirm)) return;
+    setError(null);
+    startTransition(async () => {
+      try {
+        onApproved(await approveRequest(request.id));
+      } catch (e) {
+        setError(e instanceof Error ? e.message : "Error");
+      }
+    });
+  };
 
   return (
-    <article
-      className={`overflow-hidden rounded-2xl border border-border/60 bg-card transition-opacity ${
-        isPending ? "opacity-60" : ""
-      }`}
+    <motion.article
+      layout
+      initial={{ opacity: 0, y: 16 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, scale: 0.97 }}
+      transition={{ duration: 0.3 }}
+      className={`overflow-hidden rounded-2xl border bg-card transition-opacity ${
+        isNew ? "border-primary/40 shadow-sm" : "border-border/60"
+      } ${isPending ? "opacity-60" : ""}`}
     >
       {request.image_urls.length > 0 && (
         <div className="flex gap-1 overflow-x-auto">
@@ -108,62 +222,96 @@ function RequestCard({ request }: { request: LocationRequest }) {
             ))}
           </div>
         )}
+        {request.admin_note && (
+          <p className="rounded-xl bg-muted px-3 py-2 text-sm">
+            <span className="font-medium">{t.admin.templateVar.note}: </span>
+            {request.admin_note}
+          </p>
+        )}
 
-        <div className="flex flex-wrap items-center gap-2 border-t border-border/60 pt-4">
-          <Button
-            size="sm"
-            nativeButton={false}
-            className="gap-1.5"
-            render={
-              <Link href={`/admin/locations/new?from=${request.id}`}>
-                <Plus className="h-3.5 w-3.5" />
-                {t.admin.requestCreate}
-              </Link>
-            }
-          />
-          <Button
-            size="sm"
-            variant="outline"
-            nativeButton={false}
-            className="gap-1.5"
-            render={
-              <a href={whatsappHref(request.owner_phone)} target="_blank" rel="noopener noreferrer">
-                <MessageCircle className="h-3.5 w-3.5" />
-                {t.admin.requestContact}
-              </a>
-            }
-          />
-          {request.maps_url && (
+        {isNew ? (
+          <div className="flex flex-wrap items-center gap-2 border-t border-border/60 pt-4">
+            <Button onClick={approve} disabled={isPending} className="gap-1.5 bg-brand text-brand-foreground hover:bg-brand/90">
+              {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
+              {t.admin.requestApprove}
+            </Button>
             <Button
-              size="sm"
               variant="outline"
               nativeButton={false}
               className="gap-1.5"
               render={
-                <a href={request.maps_url} target="_blank" rel="noopener noreferrer">
-                  <MapPin className="h-3.5 w-3.5" />
-                  {t.admin.requestMap}
+                <Link href={`/admin/locations/new?from=${request.id}`}>
+                  <Pencil className="h-4 w-4" />
+                  {t.admin.requestEdit}
+                </Link>
+              }
+            />
+            <Button variant="destructive" onClick={onReject} disabled={isPending} className="gap-1.5">
+              <X className="h-4 w-4" />
+              {t.admin.requestReject}
+            </Button>
+          </div>
+        ) : (
+          <div className="flex flex-wrap items-center gap-2 border-t border-border/60 pt-4">
+            <Button
+              onClick={onNotify}
+              className="gap-1.5 bg-whatsapp text-whatsapp-foreground hover:bg-whatsapp/90"
+            >
+              <MessageSquareText className="h-4 w-4" />
+              {t.admin.requestNotify}
+            </Button>
+            {request.location?.slug && (
+              <Button
+                variant="outline"
+                nativeButton={false}
+                className="gap-1.5"
+                render={
+                  <Link href={`/locations/${request.location.slug}`} target="_blank">
+                    <ExternalLink className="h-4 w-4" />
+                    {t.admin.requestViewLocation}
+                  </Link>
+                }
+              />
+            )}
+          </div>
+        )}
+        {error && <p className="text-sm text-destructive">{error}</p>}
+
+        <div className="flex flex-wrap items-center gap-1 text-xs text-muted-foreground">
+          <span>
+            {new Date(request.created_at).toLocaleString(locale === "ar" ? "ar-SA-u-ca-gregory" : "en-GB", {
+              timeZone: "Asia/Riyadh",
+              dateStyle: "medium",
+              timeStyle: "short",
+            })}
+          </span>
+          <div className="ms-auto flex items-center gap-1">
+            <Button
+              size="sm"
+              variant="ghost"
+              nativeButton={false}
+              className="gap-1"
+              render={
+                <a href={buildWhatsAppMessageUrl(request.owner_phone, "")} target="_blank" rel="noopener noreferrer">
+                  <MessageCircle className="h-3.5 w-3.5" />
+                  {t.admin.requestContact}
                 </a>
               }
             />
-          )}
-
-          <div className="ms-auto flex items-center gap-1">
-            <select
-              aria-label="Status"
-              value={request.status}
-              disabled={isPending}
-              onChange={(e) =>
-                startTransition(() => updateRequestStatus(request.id, e.target.value as LocationRequestStatus))
-              }
-              className="h-7 rounded-lg border border-input bg-background px-2 text-xs"
-            >
-              {STATUSES.map((s) => (
-                <option key={s} value={s}>
-                  {t.admin.requestStatus[s]}
-                </option>
-              ))}
-            </select>
+            {request.maps_url && (
+              <Button
+                size="sm"
+                variant="ghost"
+                nativeButton={false}
+                className="gap-1"
+                render={
+                  <a href={request.maps_url} target="_blank" rel="noopener noreferrer">
+                    <MapPin className="h-3.5 w-3.5" />
+                    {t.admin.requestMap}
+                  </a>
+                }
+              />
+            )}
             <Button
               variant="ghost"
               size="icon-sm"
@@ -179,32 +327,126 @@ function RequestCard({ request }: { request: LocationRequest }) {
             </Button>
           </div>
         </div>
-        <p className="text-xs text-muted-foreground">
-          {new Date(request.created_at).toLocaleString(locale === "ar" ? "ar-SA" : "en-GB")}
-        </p>
       </div>
-    </article>
+    </motion.article>
   );
 }
 
-export function RequestsList({ requests }: { requests: LocationRequest[] }) {
+export function RequestsList({
+  requests: initialRequests,
+  templates,
+  notifyId,
+}: {
+  requests: LocationRequest[];
+  templates: WhatsAppTemplate[];
+  notifyId?: string;
+}) {
   const { t } = useLocale();
+  const router = useRouter();
+  const [requests, setRequests] = useState(initialRequests);
+  const [filter, setFilter] = useState<Filter>("all");
+  const [notifying, setNotifying] = useState<LocationRequest | null>(null);
+  const [rejecting, setRejecting] = useState<LocationRequest | null>(null);
+
+  // Server data wins after a revalidation (e.g. a delete).
+  // eslint-disable-next-line react-hooks/set-state-in-effect -- syncing from new server props
+  useEffect(() => setRequests(initialRequests), [initialRequests]);
+
+  // Arriving from "edit, then publish": open the WhatsApp message for that request.
+  // Done after mount because the message needs window.location.origin for the link.
+  useEffect(() => {
+    const target = notifyId ? initialRequests.find((r) => r.id === notifyId) : undefined;
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- one-time open driven by the URL
+    if (target) setNotifying(target);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- only on arrival
+  }, [notifyId]);
+
+  const replace = (updated: LocationRequest) => {
+    setRequests((prev) => prev.map((r) => (r.id === updated.id ? updated : r)));
+    setNotifying(updated);
+  };
+
+  const closeNotify = () => {
+    setNotifying(null);
+    if (notifyId) router.replace("/admin/requests", { scroll: false });
+  };
+
+  const filters: { key: Filter; label: string }[] = [
+    { key: "all", label: t.admin.requestFilterAll },
+    { key: "new", label: t.admin.requestStatus.new },
+    { key: "approved", label: t.admin.requestStatus.approved },
+    { key: "rejected", label: t.admin.requestStatus.rejected },
+  ];
+  const visible = requests.filter((r) => matches(filter, r.status));
 
   return (
     <div className="flex max-w-4xl flex-col gap-6">
-      <div>
-        <h1 className="text-2xl font-extrabold">{t.admin.requests}</h1>
-        <p className="mt-1 text-sm text-muted-foreground">{t.admin.requestsHint}</p>
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-extrabold">{t.admin.requests}</h1>
+          <p className="mt-1 text-sm text-muted-foreground">{t.admin.requestsHint}</p>
+        </div>
+        <Button
+          variant="outline"
+          nativeButton={false}
+          className="gap-1.5"
+          render={
+            <Link href="/admin/requests/messages">
+              <MessageSquareText className="h-4 w-4" />
+              {t.admin.messages}
+            </Link>
+          }
+        />
       </div>
 
-      {requests.length === 0 ? (
+      <div className="flex flex-wrap gap-2">
+        {filters.map(({ key, label }) => {
+          const count = requests.filter((r) => matches(key, r.status)).length;
+          return (
+            <button
+              key={key}
+              type="button"
+              onClick={() => setFilter(key)}
+              aria-pressed={filter === key}
+              className={`inline-flex items-center gap-2 rounded-full border px-3.5 py-1.5 text-sm font-medium transition-colors ${
+                filter === key ? "border-transparent bg-foreground text-background" : "border-border/60 hover:bg-accent"
+              }`}
+            >
+              {label}
+              <span className="text-xs tabular-nums opacity-60">{count}</span>
+            </button>
+          );
+        })}
+      </div>
+
+      {visible.length === 0 ? (
         <div className="flex flex-col items-center gap-3 rounded-2xl border border-dashed border-border py-16 text-muted-foreground">
           <Inbox className="h-8 w-8" />
           <p>{t.admin.requestsEmpty}</p>
         </div>
       ) : (
-        requests.map((request) => <RequestCard key={request.id} request={request} />)
+        <AnimatePresence initial={false}>
+          {visible.map((request) => (
+            <RequestCard
+              key={request.id}
+              request={request}
+              onApproved={replace}
+              onReject={() => setRejecting(request)}
+              onNotify={() => setNotifying(request)}
+            />
+          ))}
+        </AnimatePresence>
       )}
+
+      <RejectDialog
+        request={rejecting}
+        onClose={() => setRejecting(null)}
+        onRejected={(updated) => {
+          setRejecting(null);
+          replace(updated);
+        }}
+      />
+      <NotifyDialog request={notifying} templates={templates} onClose={closeNotify} />
     </div>
   );
 }

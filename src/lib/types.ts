@@ -54,7 +54,8 @@ export interface Admin {
 }
 
 
-export type LocationRequestStatus = "new" | "contacted" | "added" | "rejected";
+export type LocationRequestStatus = "new" | "approved" | "edited" | "rejected";
+export type RequestDecision = Exclude<LocationRequestStatus, "new">;
 
 export interface LocationRequest {
   id: string;
@@ -74,7 +75,17 @@ export interface LocationRequest {
   description: string | null;
   features: string[];
   image_urls: string[];
+  location_id: string | null;
+  admin_note: string | null;
+  decided_at: string | null;
   created_at: string;
   category?: Category | null;
   city?: City | null;
+  location?: Pick<Location, "slug"> | null;
+}
+
+export interface WhatsAppTemplate {
+  key: RequestDecision;
+  body: string;
+  updated_at: string;
 }
