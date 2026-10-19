@@ -292,6 +292,12 @@ export const dictionary = {
         ],
       },
     },
+    listCta: {
+      title: "عندك مكان يصلح للتصوير؟",
+      body: "اعرض استوديو، فيلا، مقهى أو أي مكان مميز على وجهة، ووصّله لصنّاع المحتوى والمصوّرين. الطلب ياخذ دقائق.",
+      button: "أضف موقعك",
+      steps: ["عبّ النموذج", "نراجع طلبك", "ينتشر موقعك"],
+    },
     footer: {
       rights: "جميع الحقوق محفوظة",
     },
@@ -586,6 +592,12 @@ export const dictionary = {
           },
         ],
       },
+    },
+    listCta: {
+      title: "Have a space that works for shoots?",
+      body: "List your studio, villa, cafe or any standout space on Wejha and get it in front of creators and filmmakers. It only takes a few minutes.",
+      button: "List your space",
+      steps: ["Fill in the form", "We review it", "Your space goes live"],
     },
     footer: {
       rights: "All rights reserved",
