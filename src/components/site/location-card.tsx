@@ -51,7 +51,7 @@ export function LocationCard({
 
         {categoryName && (
           <span
-            className={`${isGrid ? "block" : "hidden"} absolute start-2 top-2 z-10 rounded-full bg-white/15 px-2 py-0.5 text-[10px] font-semibold text-white backdrop-blur-md transition-transform duration-300 sm:start-4 sm:top-4 sm:px-3 sm:py-1 sm:text-xs sm:group-hover:-translate-y-0.5`}
+            className={`${isGrid ? "block" : "hidden"} absolute start-2 top-2 z-10 rounded-full bg-black/40 px-2 py-0.5 text-[10px] font-semibold text-white transition-transform duration-300 sm:start-4 sm:top-4 sm:px-3 sm:py-1 sm:text-xs sm:group-hover:-translate-y-0.5`}
             style={{ transform: "translateZ(40px)" }}
           >
             {categoryName}

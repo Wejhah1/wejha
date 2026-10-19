@@ -155,6 +155,9 @@ function ApproveDialog({
         <DialogDescription>
           «{request?.name_ar}» — {t.admin.requestApproveHint}
         </DialogDescription>
+        {(request?.category_other || request?.city_other) && (
+          <p className="rounded-xl bg-amber-100 px-3 py-2 text-sm text-amber-900">{t.admin.requestHasOther}</p>
+        )}
         <form
           onSubmit={(e) => {
             e.preventDefault();
@@ -211,6 +214,10 @@ function RequestCard({
   const lang = locale === "ar" ? "ar" : "en";
   const category = request.category ? request.category[`name_${lang}`] : null;
   const city = request.city ? request.city[`name_${lang}`] : null;
+  const suggestions = [
+    request.category_other && `${t.admin.newCategory}: ${request.category_other}`,
+    request.city_other && `${t.admin.newCity}: ${request.city_other}`,
+  ].filter(Boolean);
   const settingLabel = {
     indoor: t.browse.settingIndoor,
     outdoor: t.browse.settingOutdoor,
@@ -252,6 +259,15 @@ function RequestCard({
             <p className="mt-1 text-sm text-muted-foreground">
               {[category, city, request.district, settingLabel].filter(Boolean).join(" · ")}
             </p>
+            {suggestions.length > 0 && (
+              <div className="mt-2 flex flex-wrap gap-1.5">
+                {suggestions.map((s) => (
+                  <span key={s} className="rounded-full bg-amber-100 px-2.5 py-1 text-xs font-medium text-amber-900">
+                    {s}
+                  </span>
+                ))}
+              </div>
+            )}
           </div>
           <span className={`rounded-full px-2.5 py-1 text-xs font-medium ${STATUS_STYLES[request.status]}`}>
             {t.admin.requestStatus[request.status]}

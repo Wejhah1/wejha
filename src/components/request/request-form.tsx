@@ -9,6 +9,7 @@ import {
   Home,
   Lightbulb,
   Loader2,
+  Plus,
   Send,
   Sun,
   SunMoon,
@@ -80,9 +81,8 @@ function Section({
   children: React.ReactNode;
 }) {
   return (
-    <Reveal>
-      <section className="rounded-3xl border border-border/60 bg-card p-5 shadow-sm sm:p-8">
-        <header className="mb-6 flex items-start gap-4">
+    <section className="rounded-3xl border border-border/60 bg-card p-4 shadow-sm sm:p-8">
+        <header className="mb-5 flex items-start gap-3 sm:mb-6 sm:gap-4">
           <span
             className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl text-sm font-bold transition-colors duration-500 ${
               done ? "bg-brand text-brand-foreground" : "bg-foreground text-background"
@@ -107,7 +107,35 @@ function Section({
         </header>
         {children}
       </section>
-    </Reveal>
+  );
+}
+
+const OTHER = "other";
+
+// Free-text field revealed when the owner picks "Other" for type or city.
+function OtherInput({ show, name, placeholder }: { show: boolean; name: string; placeholder: string }) {
+  return (
+    <AnimatePresence initial={false}>
+      {show && (
+        <motion.div
+          initial={{ opacity: 0, height: 0 }}
+          animate={{ opacity: 1, height: "auto" }}
+          exit={{ opacity: 0, height: 0 }}
+          transition={{ duration: 0.3, ease }}
+          className="overflow-hidden"
+        >
+          <Input
+            name={name}
+            required
+            minLength={2}
+            maxLength={60}
+            autoFocus
+            placeholder={placeholder}
+            className={`${fieldClass} mt-1`}
+          />
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 }
 
@@ -127,7 +155,7 @@ function ChoiceChip({
   defaultChecked?: boolean;
 }) {
   return (
-    <label className="cursor-pointer">
+    <label className="min-w-0 cursor-pointer">
       <input
         type="radio"
         name={name}
@@ -136,7 +164,7 @@ function ChoiceChip({
         defaultChecked={defaultChecked}
         className="peer sr-only"
       />
-      <span className="flex items-center gap-2 rounded-xl border border-border bg-background px-3.5 py-2.5 text-sm font-medium transition-all peer-checked:border-primary peer-checked:bg-primary/10 peer-checked:text-primary peer-focus-visible:ring-3 peer-focus-visible:ring-ring/50 hover:border-primary/50 active:scale-[0.97]">
+      <span className="flex h-full min-h-11 items-center justify-center gap-2 rounded-xl border border-border bg-background px-3 py-2.5 text-center text-sm font-medium transition-all sm:justify-start sm:px-3.5 peer-checked:border-primary peer-checked:bg-primary/10 peer-checked:text-primary peer-focus-visible:ring-3 peer-focus-visible:ring-ring/50 hover:border-primary/50 active:scale-[0.97]">
         {Icon && <Icon className="h-4 w-4" />}
         {label}
       </span>
@@ -155,19 +183,27 @@ export function RequestForm({ categories, cities }: { categories: Category[]; ci
   const [submitted, setSubmitted] = useState(false);
   const [formKey, setFormKey] = useState(0);
   const [isPending, startTransition] = useTransition();
+  const [otherCategory, setOtherCategory] = useState(false);
+  const [otherCity, setOtherCity] = useState(false);
+  const [consented, setConsented] = useState(false);
 
   const recompute = () => {
     if (!formRef.current) return;
     const data = new FormData(formRef.current);
     const has = (key: string) => String(data.get(key) ?? "").trim().length > 0;
+    const chosen = (key: string, other: string) =>
+      data.get(key) === OTHER ? String(data.get(other) ?? "").trim().length >= 2 : has(key);
     setFilled({
       owner_name: has("owner_name"),
       owner_phone: has("owner_phone"),
       name_ar: has("name_ar"),
-      category_id: has("category_id"),
-      city_id: has("city_id"),
+      category_id: chosen("category_id", "category_other"),
+      city_id: chosen("city_id", "city_other"),
       price_per_day: has("price_per_day"),
     });
+    setOtherCategory(data.get("category_id") === OTHER);
+    setOtherCity(data.get("city_id") === OTHER);
+    setConsented(data.get("consent") === "on");
   };
 
   const done: Record<SectionKey, boolean> = {
@@ -216,6 +252,9 @@ export function RequestForm({ categories, cities }: { categories: Category[]; ci
     setFilled({});
     setPhotos({ urls: [], busy: false });
     setFormKey((k) => k + 1);
+    setOtherCategory(false);
+    setOtherCity(false);
+    setConsented(false);
   };
 
   return (
@@ -236,11 +275,9 @@ export function RequestForm({ categories, cities }: { categories: Category[]; ci
             className="mx-auto flex max-w-lg flex-col items-center rounded-3xl border border-border/60 bg-card px-6 py-12 text-center shadow-sm"
           >
             <div className="relative flex h-24 w-24 items-center justify-center">
-              <motion.span
-                initial={{ scale: 0.5, opacity: 0.6 }}
-                animate={{ scale: 1.6, opacity: 0 }}
-                transition={{ duration: 1.4, repeat: Infinity, ease: "easeOut" }}
-                className="absolute inset-0 rounded-full bg-brand/30"
+              <span
+                style={{ animationDuration: "1.4s" }}
+                className="animate-pulse-ring absolute inset-0 rounded-full bg-brand/30"
               />
               <motion.span
                 initial={{ scale: 0, rotate: -45 }}
@@ -293,6 +330,18 @@ export function RequestForm({ categories, cities }: { categories: Category[]; ci
               onChange={recompute}
               className="flex min-w-0 flex-col gap-6"
             >
+              <div className="sticky top-0 z-30 -mx-4 bg-background px-4 py-2.5 shadow-[0_6px_12px_-8px_rgb(0_0_0/0.25)] lg:hidden">
+                <div className="flex items-center justify-between text-xs font-medium">
+                  <span>{r.progress}</span>
+                  <span className="tabular-nums text-muted-foreground">{doneCount} / 4</span>
+                </div>
+                <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-muted">
+                  <div
+                    className="h-full rounded-full bg-primary transition-[width] duration-500"
+                    style={{ width: `${(doneCount / 4) * 100}%` }}
+                  />
+                </div>
+              </div>
               <input
                 type="text"
                 name="website"
@@ -369,7 +418,7 @@ export function RequestForm({ categories, cities }: { categories: Category[]; ci
                   </Field>
 
                   <Field label={f.category} required className="sm:col-span-2">
-                    <div className="flex flex-wrap gap-2" role="radiogroup" aria-label={f.category}>
+                    <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap" role="radiogroup" aria-label={f.category}>
                       {categories.map((c, i) => (
                         <ChoiceChip
                           key={c.id}
@@ -380,11 +429,17 @@ export function RequestForm({ categories, cities }: { categories: Category[]; ci
                           label={locale === "ar" ? c.name_ar : c.name_en}
                         />
                       ))}
+                      <ChoiceChip name="category_id" value={OTHER} icon={Plus} label={f.other} />
                     </div>
+                    <OtherInput
+                      show={otherCategory}
+                      name="category_other"
+                      placeholder={f.categoryOtherPh}
+                    />
                   </Field>
 
                   <Field label={f.city} required className="sm:col-span-2">
-                    <div className="flex flex-wrap gap-2" role="radiogroup" aria-label={f.city}>
+                    <div className="grid grid-cols-3 gap-2 sm:flex sm:flex-wrap" role="radiogroup" aria-label={f.city}>
                       {cities.map((c, i) => (
                         <ChoiceChip
                           key={c.id}
@@ -394,7 +449,9 @@ export function RequestForm({ categories, cities }: { categories: Category[]; ci
                           label={locale === "ar" ? c.name_ar : c.name_en}
                         />
                       ))}
+                      <ChoiceChip name="city_id" value={OTHER} icon={Plus} label={f.other} />
                     </div>
+                    <OtherInput show={otherCity} name="city_other" placeholder={f.cityOtherPh} />
                   </Field>
 
                   <Field label={f.district} htmlFor="district">
@@ -423,7 +480,7 @@ export function RequestForm({ categories, cities }: { categories: Category[]; ci
               <Section index={3} title={r.sections.details.title} hint={r.sections.details.hint} done={done.details}>
                 <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
                   <Field label={f.setting} required className="sm:col-span-2">
-                    <div className="flex flex-wrap gap-2" role="radiogroup" aria-label={f.setting}>
+                    <div className="grid grid-cols-3 gap-2 sm:flex sm:flex-wrap" role="radiogroup" aria-label={f.setting}>
                       <ChoiceChip name="setting" value="indoor" icon={Home} label={t.browse.settingIndoor} />
                       <ChoiceChip name="setting" value="outdoor" icon={Sun} label={t.browse.settingOutdoor} />
                       <ChoiceChip
@@ -507,8 +564,7 @@ export function RequestForm({ categories, cities }: { categories: Category[]; ci
                 </Section>
               </div>
 
-              <Reveal>
-                <div className="flex flex-col gap-5 rounded-3xl border border-border/60 bg-card p-5 shadow-sm sm:p-8">
+              <div className="flex flex-col gap-5 rounded-3xl border border-border/60 bg-card p-4 shadow-sm sm:p-8">
                   <label className="flex cursor-pointer items-start gap-3 text-sm leading-relaxed">
                     <input type="checkbox" name="consent" required className="mt-1 h-4 w-4 shrink-0 accent-primary" />
                     {f.consent}
@@ -529,7 +585,7 @@ export function RequestForm({ categories, cities }: { categories: Category[]; ci
                   <Button
                     type="submit"
                     size="lg"
-                    disabled={isPending || photos.busy}
+                    disabled={!consented || isPending || photos.busy}
                     onClick={() => {
                       if (formRef.current && !formRef.current.checkValidity()) setError(r.errors.required);
                     }}
@@ -538,8 +594,8 @@ export function RequestForm({ categories, cities }: { categories: Category[]; ci
                     {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
                     {isPending ? r.submitting : r.submit}
                   </Button>
+                  {!consented && <p className="-mt-2 text-xs text-muted-foreground">{f.consentFirst}</p>}
                 </div>
-              </Reveal>
             </form>
 
             <aside className="hidden lg:sticky lg:top-24 lg:block">
