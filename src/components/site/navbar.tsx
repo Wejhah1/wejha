@@ -1,23 +1,56 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { Camera } from "lucide-react";
 import { useLocale } from "@/lib/i18n/locale-context";
 import { LocaleToggle } from "@/components/site/locale-toggle";
 import { Button } from "@/components/ui/button";
 
-// Always visible: it used to hide over the home hero and while scrolling down,
-// which left visitors without navigation until they scrolled back up.
+// Always shown within this distance of the top of the page.
+const TOP_ZONE = 80;
+// Ignore scroll jitter smaller than this before switching direction.
+const SCROLL_SLACK = 8;
+
+// Visible as soon as a page opens (including over the home hero), hides while
+// scrolling down so it doesn't cover content, and comes back on any scroll up.
 export function Navbar({ overlay = false }: { overlay?: boolean }) {
   const { t } = useLocale();
+  const pathname = usePathname();
+  const [visible, setVisible] = useState(true);
+
+  useEffect(() => {
+    // Every page starts with the bar shown.
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- reset on route change
+    setVisible(true);
+    let lastY = window.scrollY;
+
+    function update() {
+      const y = window.scrollY;
+      const delta = y - lastY;
+      if (y < TOP_ZONE) {
+        setVisible(true);
+      } else if (Math.abs(delta) < SCROLL_SLACK) {
+        return;
+      } else {
+        setVisible(delta < 0);
+      }
+      lastY = y;
+    }
+
+    window.addEventListener("scroll", update, { passive: true });
+    return () => window.removeEventListener("scroll", update);
+  }, [pathname]);
 
   return (
     <header
-      className={
-        overlay
-          ? "fixed inset-x-0 top-4 z-40 flex justify-center px-4"
-          : "sticky top-4 z-40 mb-4 flex justify-center px-4"
-      }
+      className={`${
+        overlay ? "fixed inset-x-0" : "sticky mb-4"
+      } top-4 z-40 flex justify-center px-4 transition-[translate,opacity] duration-300 ease-out ${
+        visible ? "" : "pointer-events-none -translate-y-24 opacity-0"
+      }`}
+      inert={!visible}
     >
       <div className="flex h-14 w-full max-w-3xl items-center justify-between gap-2 rounded-full border border-border/60 bg-background/95 px-3 shadow-lg shadow-black/5 sm:px-4">
         <Link href="/" className="flex items-center gap-2">
