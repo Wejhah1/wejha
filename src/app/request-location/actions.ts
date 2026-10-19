@@ -2,15 +2,28 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { createPublicClient } from "@/lib/supabase/public";
 import {
   REQUEST_IMAGES_BUCKET,
   REQUEST_MAX_FEATURES,
   REQUEST_MAX_PHOTOS,
   REQUEST_MIN_PHOTOS,
 } from "@/lib/location-requests";
-import type { LocationSetting } from "@/lib/types";
+import type { LocationRequestStatus, LocationSetting } from "@/lib/types";
 
-export type SubmitRequestResult = { ok: true } | { ok: false; error: "required" | "photos" | "generic" };
+export type SubmitRequestResult =
+  | { ok: true; id: string | null }
+  | { ok: false; error: "required" | "photos" | "generic" };
+
+export interface MyRequestStatus {
+  id: string;
+  name_ar: string;
+  status: LocationRequestStatus;
+  admin_note: string | null;
+  location_slug: string | null;
+  created_at: string;
+  decided_at: string | null;
+}
 
 const SETTINGS: LocationSetting[] = ["indoor", "outdoor", "both"];
 
@@ -34,9 +47,25 @@ function parseList(formData: FormData, key: string) {
   }
 }
 
+// Only accept photos uploaded to our own request bucket. Compared by host and
+// path so a trailing slash in the configured Supabase URL can't reject them all.
+function isRequestImageUrl(value: string) {
+  try {
+    const url = new URL(value);
+    const host = new URL(process.env.NEXT_PUBLIC_SUPABASE_URL!).host;
+    return (
+      url.protocol === "https:" &&
+      url.host === host &&
+      url.pathname.startsWith(`/storage/v1/object/public/${REQUEST_IMAGES_BUCKET}/`)
+    );
+  } catch {
+    return false;
+  }
+}
+
 export async function submitLocationRequest(formData: FormData): Promise<SubmitRequestResult> {
   // Honeypot: real users never see or fill this field.
-  if (String(formData.get("website") ?? "")) return { ok: true };
+  if (String(formData.get("website") ?? "")) return { ok: true, id: null };
 
   const owner_name = text(formData, "owner_name", 120);
   const owner_phone = String(formData.get("owner_phone") ?? "").replace(/[^\d+]/g, "").slice(0, 20);
@@ -45,17 +74,18 @@ export async function submitLocationRequest(formData: FormData): Promise<SubmitR
     return { ok: false, error: "required" };
   }
 
-  const imagePrefix = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/${REQUEST_IMAGES_BUCKET}/`;
-  const image_urls = parseList(formData, "image_urls")
-    .filter((u) => u.startsWith(imagePrefix))
-    .slice(0, REQUEST_MAX_PHOTOS);
+  const image_urls = parseList(formData, "image_urls").filter(isRequestImageUrl).slice(0, REQUEST_MAX_PHOTOS);
   if (image_urls.length < REQUEST_MIN_PHOTOS) return { ok: false, error: "photos" };
 
   const settingRaw = String(formData.get("setting") ?? "both") as LocationSetting;
   const mapsUrl = text(formData, "maps_url", 500);
 
+  // Generated here because visitors can't read the row back after inserting
+  // it; the browser keeps this id to look up the request's status later.
+  const id = crypto.randomUUID();
   const supabase = await createClient();
   const { error } = await supabase.from("location_requests").insert({
+    id,
     owner_name,
     owner_phone,
     owner_email: text(formData, "owner_email", 200) || null,
@@ -81,5 +111,22 @@ export async function submitLocationRequest(formData: FormData): Promise<SubmitR
   }
 
   revalidatePath("/admin/requests");
-  return { ok: true };
+  return { ok: true, id };
+}
+
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+// Status of requests submitted from this device (ids kept in localStorage).
+export async function getMyRequestStatuses(ids: string[]): Promise<MyRequestStatus[]> {
+  const valid = ids.filter((id) => UUID.test(id)).slice(0, 20);
+  if (!valid.length) return [];
+
+  const { data, error } = await createPublicClient().rpc("get_location_request_statuses", {
+    request_ids: valid,
+  });
+  if (error) {
+    console.error("getMyRequestStatuses", error.message);
+    return [];
+  }
+  return (data ?? []) as MyRequestStatus[];
 }

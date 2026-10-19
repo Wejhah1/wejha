@@ -45,7 +45,7 @@ export function RequestGuide({ open, onClose }: { open: boolean; onClose: (start
             <motion.div
               animate={{ scale: [1, 1.15, 1], opacity: [0.35, 0.5, 0.35] }}
               transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-              className="absolute h-56 w-56 rounded-full bg-[oklch(0.56_0.15_35)] blur-[70px]"
+              className="absolute h-56 w-56 bg-[radial-gradient(closest-side,oklch(0.56_0.15_35),transparent)]"
             />
             {[0, 1].map((ring) => (
               <motion.span

@@ -26,12 +26,12 @@ export function RequestHero({ onStart, onShowGuide }: { onStart: () => void; onS
           <motion.div
             animate={{ x: [0, 30, 0], y: [0, -20, 0] }}
             transition={{ duration: 22, repeat: Infinity, ease: "easeInOut" }}
-            className="absolute -start-24 -top-24 h-[26rem] w-[26rem] rounded-full bg-[oklch(0.56_0.15_35)] opacity-30 blur-[110px]"
+            className="absolute -start-24 -top-24 h-[26rem] w-[26rem] bg-[radial-gradient(closest-side,oklch(0.56_0.15_35),transparent)] opacity-30"
           />
           <motion.div
             animate={{ x: [0, -24, 0], y: [0, 26, 0] }}
             transition={{ duration: 26, repeat: Infinity, ease: "easeInOut" }}
-            className="absolute -end-20 bottom-[-6rem] h-[24rem] w-[24rem] rounded-full bg-[oklch(0.58_0.09_120)] opacity-25 blur-[110px]"
+            className="absolute -end-20 bottom-[-6rem] h-[24rem] w-[24rem] bg-[radial-gradient(closest-side,oklch(0.58_0.09_120),transparent)] opacity-25"
           />
           <div
             className="absolute inset-0 opacity-[0.07]"

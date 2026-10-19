@@ -90,7 +90,9 @@ export async function createLocation(formData: FormData) {
   if (error) throw new Error(error.message);
 
   revalidatePath("/admin");
+  revalidatePath("/");
   revalidatePath("/locations");
+  revalidatePath("/locations/[slug]", "page");
 
   // Created from an owner's request after the admin edited it: mark the request
   // and land on the requests page with the WhatsApp notification ready.
@@ -120,7 +122,9 @@ export async function updateLocation(id: string, formData: FormData) {
   if (error) throw new Error(error.message);
 
   revalidatePath("/admin");
+  revalidatePath("/");
   revalidatePath("/locations");
+  revalidatePath("/locations/[slug]", "page");
   redirect("/admin");
 }
 
@@ -130,7 +134,9 @@ export async function deleteLocation(id: string) {
   if (error) throw new Error(error.message);
 
   revalidatePath("/admin");
+  revalidatePath("/");
   revalidatePath("/locations");
+  revalidatePath("/locations/[slug]", "page");
 }
 
 export async function togglePublish(id: string, isPublished: boolean) {
@@ -142,7 +148,9 @@ export async function togglePublish(id: string, isPublished: boolean) {
   if (error) throw new Error(error.message);
 
   revalidatePath("/admin");
+  revalidatePath("/");
   revalidatePath("/locations");
+  revalidatePath("/locations/[slug]", "page");
 }
 
 export async function createCategory(formData: FormData) {
@@ -166,8 +174,10 @@ export async function createCategory(formData: FormData) {
   if (error) throw new Error(error.message);
 
   revalidatePath("/admin/categories");
+  revalidatePath("/request-location");
   revalidatePath("/");
   revalidatePath("/locations");
+  revalidatePath("/locations/[slug]", "page");
   return data as Category;
 }
 
@@ -177,8 +187,10 @@ export async function deleteCategory(id: string) {
   if (error) throw new Error(error.message);
 
   revalidatePath("/admin/categories");
+  revalidatePath("/request-location");
   revalidatePath("/");
   revalidatePath("/locations");
+  revalidatePath("/locations/[slug]", "page");
 }
 
 export async function createAdmin(formData: FormData) {
@@ -274,8 +286,9 @@ export async function approveRequest(id: string, bookingNumber: string) {
   if (error) throw new Error(error.message);
 
   revalidatePath("/admin");
-  revalidatePath("/locations");
   revalidatePath("/");
+  revalidatePath("/locations");
+  revalidatePath("/locations/[slug]", "page");
   return decideRequest(id, "approved", { location_id: created.id });
 }
 
