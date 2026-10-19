@@ -227,8 +227,12 @@ async function decideRequest(
   return data as unknown as LocationRequest;
 }
 
-// Publishes the request exactly as the owner submitted it.
-export async function approveRequest(id: string) {
+// Publishes the request exactly as the owner submitted it. Bookings go to the
+// admin-supplied number; the owner's number is only used to notify them.
+export async function approveRequest(id: string, bookingNumber: string) {
+  const whatsappNumber = toWhatsAppNumber(bookingNumber);
+  if (whatsappNumber.length < 8 || whatsappNumber.length > 15) throw new Error("Invalid booking number");
+
   const supabase = await createClient();
   const {
     data: { user },
@@ -260,8 +264,8 @@ export async function approveRequest(id: string) {
       fact_icons: r.features.map(() => DEFAULT_FACT_ICON),
       cover_image_url: cover ?? "",
       gallery_urls: gallery,
-      whatsapp_number: toWhatsAppNumber(r.owner_phone),
-      whatsapp_contact_name: r.owner_name,
+      whatsapp_number: whatsappNumber,
+      whatsapp_contact_name: null,
       is_published: true,
       created_by: user?.id ?? null,
     })

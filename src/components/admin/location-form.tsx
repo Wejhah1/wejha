@@ -11,11 +11,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { CoverUploader, GalleryUploader } from "@/components/admin/image-uploader";
 import { FactsEditor } from "@/components/admin/facts-editor";
 import { QuickAddCategory } from "@/components/admin/quick-add-category";
 import { useLocale } from "@/lib/i18n/locale-context";
+import { getSavedBookingNumber, saveBookingNumber } from "@/lib/booking-number";
 import type { Category, City, Location } from "@/lib/types";
 
 export function LocationForm({
@@ -35,11 +36,24 @@ export function LocationForm({
 }) {
   const { locale, t } = useLocale();
   const values = location ?? defaults;
+  const whatsappRef = useRef<HTMLInputElement>(null);
+
+  // Locations created from an owner's request take bookings on the admin's
+  // number, not the owner's, so pre-fill the last one this admin used.
+  useEffect(() => {
+    if (fromRequestId && whatsappRef.current && !whatsappRef.current.value) {
+      whatsappRef.current.value = getSavedBookingNumber();
+    }
+  }, [fromRequestId]);
   const [cats, setCats] = useState(categories);
   const [categoryId, setCategoryId] = useState<string | undefined>(values?.category_id ?? undefined);
 
   return (
-    <form action={action} className="flex max-w-3xl flex-col gap-6">
+    <form
+      action={action}
+      onSubmit={() => fromRequestId && saveBookingNumber(whatsappRef.current?.value ?? "")}
+      className="flex max-w-3xl flex-col gap-6"
+    >
       {fromRequestId && <input type="hidden" name="from_request" value={fromRequestId} />}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div className="flex flex-col gap-2">
@@ -162,8 +176,11 @@ export function LocationForm({
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div className="flex flex-col gap-2">
-          <Label htmlFor="whatsapp_number">WhatsApp number (with country code)</Label>
+          <Label htmlFor="whatsapp_number">
+            {fromRequestId ? t.admin.bookingNumber : "WhatsApp number (with country code)"}
+          </Label>
           <Input
+            ref={whatsappRef}
             id="whatsapp_number"
             name="whatsapp_number"
             required
@@ -171,6 +188,7 @@ export function LocationForm({
             placeholder="9665XXXXXXXX"
             defaultValue={values?.whatsapp_number}
           />
+          {fromRequestId && <p className="text-xs text-muted-foreground">{t.admin.bookingNumberHint}</p>}
         </div>
         <div className="flex flex-col gap-2">
           <Label htmlFor="whatsapp_contact_name">Contact name (optional)</Label>
